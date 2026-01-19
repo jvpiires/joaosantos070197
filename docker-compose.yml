@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Banco de Dados (PostgreSQL)
+  # --- 1. BANCO DE DADOS (PostgreSQL)
   database:
     image: postgres:15-alpine
     container_name: sgd-postgres-v1 
@@ -21,7 +21,28 @@ services:
     networks:
       - sgd-network
 
-  # Object Storage (MinIO)
+  # --- 2. BACKEND (Spring Boot)
+  backend:
+    build: ./backend
+    container_name: sgd-backend-v1
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/db_discografia_core
+      SPRING_DATASOURCE_USERNAME: srv_discografia
+      SPRING_DATASOURCE_PASSWORD: P@ssw0rd_Seplag2026!
+      APP_MINIO_URL: http://storage:9000
+      APP_MINIO_ACCESS-KEY: admin_storage
+      APP_MINIO_SECRET-KEY: Storage_Key_2026!
+    depends_on:
+      database:
+        condition: service_healthy
+      storage:
+        condition: service_started
+    networks:
+      - sgd-network
+
+  # --- 3. OBJECT STORAGE (MinIO)
   storage:
     image: minio/minio:latest
     container_name: sgd-minio-v1
@@ -37,7 +58,7 @@ services:
     networks:
       - sgd-network
 
-  #Configuração
+  # --- 4. CONFIGURAÇÃO AUTOMÁTICA STORAGE
   storage-setup:
     image: minio/mc
     depends_on:
@@ -51,7 +72,18 @@ services:
       "
     networks:
       - sgd-network
-
+      
+  # --- 5. FRONTEND ---
+  frontend:
+    build: ./frontend
+    container_name: sgd-frontend-v1
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - sgd-network
+      
 volumes:
   pg_discografia_data:
   minio_storage_data:
