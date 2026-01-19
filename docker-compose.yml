@@ -65,14 +65,13 @@ services:
       - storage
     entrypoint: >
       /bin/sh -c "
-      until /usr/bin/mc config host add sgd-local http://storage:9000 admin_storage Storage_Key_2026!; do echo 'Aguardando Storage...'; sleep 1; done;
-      /usr/bin/mc mb sgd-local/capas-albuns-media;
+      until /usr/bin/mc alias set sgd-local http://storage:9000 admin_storage Storage_Key_2026!; do echo '...aguardando MinIO...'; sleep 1; done;
+      /usr/bin/mc mb --ignore-existing sgd-local/capas-albuns-media;
       /usr/bin/mc anonymous set public sgd-local/capas-albuns-media;
       exit 0;
       "
     networks:
-      - sgd-network
-      
+      - sgd-network 
   # --- 5. FRONTEND ---
   frontend:
     build: ./frontend
