@@ -1,61 +1,51 @@
-version: '3.8'
+spring:
+  application:
+    name: sgd-backend
+  
+  # Conexão com o Banco (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db_discografia_core
+    username: srv_discografia
+    password: P@ssw0rd_Seplag2026!
+    driver-class-name: org.postgresql.Driver
 
-services:
-  # Banco de Dados (PostgreSQL)
-  database:
-    image: postgres:15-alpine
-    container_name: sgd-postgres-v1 
-    environment:
-      POSTGRES_USER: srv_discografia
-      POSTGRES_PASSWORD: P@ssw0rd_Seplag2026!
-      POSTGRES_DB: db_discografia_core
-    ports:
-      - "5432:5432"
-    volumes:
-      - pg_discografia_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U srv_discografia -d db_discografia_core"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - sgd-network
+  # JPA & Hibernate
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
-  # Object Storage (MinIO)
+  # Versionamento de Banco (Flyway)
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # Configuração de Upload
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Configuração Personalizada do MinIO (S3)
+sgd:
   storage:
-    image: minio/minio:latest
-    container_name: sgd-minio-v1
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: admin_storage
-      MINIO_ROOT_PASSWORD: Storage_Key_2026!
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_storage_data:/data
-    networks:
-      - sgd-network
+    url: http://localhost:9000
+    access-key: admin_storage
+    secret-key: Storage_Key_2026!
+    bucket-name: capas-albuns-media
+    region: us-east-1
 
-  #Configuração
-  storage-setup:
-    image: minio/mc
-    depends_on:
-      - storage
-    entrypoint: >
-      /bin/sh -c "
-      until /usr/bin/mc config host add sgd-local http://storage:9000 admin_storage Storage_Key_2026!; do echo 'Aguardando Storage...'; sleep 1; done;
-      /usr/bin/mc mb sgd-local/capas-albuns-media;
-      /usr/bin/mc anonymous set public sgd-local/capas-albuns-media;
-      exit 0;
-      "
-    networks:
-      - sgd-network
-
-volumes:
-  pg_discografia_data:
-  minio_storage_data:
-
-networks:
-  sgd-network:
-    driver: bridge
+# Monitoramento (Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
