@@ -1,5 +1,6 @@
 package br.gov.mt.seplag.sgd.infra;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,8 +26,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(threatResponse);
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    private ResponseEntity<RestErrorMessage> handleEntityNotFound(EntityNotFoundException ex) {
+        RestErrorMessage threatResponse = new RestErrorMessage(HttpStatus.NOT_FOUND, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(threatResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     private ResponseEntity<RestErrorMessage> handleGeneral(Exception ex) {
+        // ADICIONE ESTA LINHA PARA VER O ERRO NO CONSOLE:
+        ex.printStackTrace(); 
+        
         RestErrorMessage threatResponse = new RestErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno no servidor.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(threatResponse);
     }
