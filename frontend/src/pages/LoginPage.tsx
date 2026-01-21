@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../contexts/AuthContext';
-import { Message } from 'primereact/message';
+import { Toast } from 'primereact/toast';
 import { FaUserPlus, FaSignInAlt } from 'react-icons/fa';
 import './LoginPage.css';
 
 // --- SCHEMAS ---
 
 const loginSchema = z.object({
-  login: z.string().min(1, 'Usuário é obrigatório'),
-  password: z.string().min(1, 'Senha é obrigatória'),
+  login: z.string().min(1, 'Por favor, informe seu usuário'),
+  password: z.string().min(1, 'Por favor, informe sua senha'),
 });
 
 const registerSchema = z.object({
   login: z
     .string()
-    .min(3, 'Mínimo 3 caracteres')
-    .max(50, 'Máximo 50 caracteres')
-    .regex(/^[a-zA-Z0-9._-]+$/, 'Apenas letras, números, . - _'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
-  confirmPassword: z.string().min(1, 'Confirmação obrigatória'),
+    .min(3, 'O usuário deve ter pelo menos 3 caracteres')
+    .max(50, 'O usuário deve ter no máximo 50 caracteres')
+    .regex(/^[a-zA-Z0-9._-]+$/, 'Use apenas letras, números, ponto (.), traço (-) ou underline (_)'),
+  password: z
+    .string()
+    .min(6, 'A senha deve ter pelo menos 6 caracteres'),
+  confirmPassword: z
+    .string()
+    .min(1, 'Por favor, confirme sua senha'),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Senhas não conferem",
+  message: "As senhas não coincidem",
   path: ["confirmPassword"],
 });
 
@@ -34,10 +38,10 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, register: registerUser } = useAuth();
+  const toast = useRef<Toast>(null);
   
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const {
     register: registerLoginField,
@@ -55,13 +59,16 @@ export const LoginPage: React.FC = () => {
 
   const handleLoginSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setStatusMessage(null);
     try {
       await login(data);
       navigate('/');
     } catch (error: any) {
-      const msg = error.response?.data?.message || 'Erro ao realizar login.';
-      setStatusMessage({ type: 'error', text: msg });
+      if (error.response?.status === 403 || error.response?.status === 401) {
+          toast.current?.show({severity:'error', summary: 'Erro de Autenticação', detail: 'Usuário ou senha inválidos.', life: 3000});
+      } else {
+          const msg = error.response?.data?.message || 'Erro ao realizar login.';
+          toast.current?.show({severity:'error', summary: 'Erro', detail: msg, life: 3000});
+      }
     } finally {
       setIsLoading(false);
     }
@@ -69,18 +76,17 @@ export const LoginPage: React.FC = () => {
 
   const handleRegisterSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    setStatusMessage(null);
     try {
       await registerUser({ login: data.login, password: data.password, userRole: 'USER' });
-      setStatusMessage({ type: 'success', text: 'Conta criada! Faça login.' });
+      toast.current?.show({severity:'success', summary: 'Sucesso', detail: 'Conta criada! Faça login.', life: 3000});
+      
       resetRegisterForm();
       setTimeout(() => {
         setIsRegisterMode(false);
-        setStatusMessage(null);
       }, 2000);
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Erro ao criar conta.';
-      setStatusMessage({ type: 'error', text: msg });
+      toast.current?.show({severity:'error', summary: 'Erro no Cadastro', detail: msg, life: 3000});
     } finally {
       setIsLoading(false);
     }
@@ -88,13 +94,13 @@ export const LoginPage: React.FC = () => {
 
   const toggleMode = () => {
     setIsRegisterMode(!isRegisterMode);
-    setStatusMessage(null);
     resetLoginForm();
     resetRegisterForm();
   };
 
   return (
-    <div className="flex bg-white min-h-screen w-full relative">
+    <div className="grid min-h-screen w-full place-items-center bg-gray-100 relative px-4 text-center overflow-hidden">
+      <Toast ref={toast} />
       <div className={`container-login ${isRegisterMode ? 'active' : ''}`} id="container">
         
         {/* --- FORM REGISTRO (SIGN UP) --- */}
@@ -105,22 +111,18 @@ export const LoginPage: React.FC = () => {
               <span className="p-2 bg-gray-100 rounded-full"><FaUserPlus size={20} className="text-blue-500"/></span>
             </div>
             <span className="text-sm text-gray-600 mb-4">Cadastre-se com seu usuário e senha</span>
-            
-            {(statusMessage && isRegisterMode) && (
-              <Message severity={statusMessage.type} text={statusMessage.text} className="w-full mb-2 custom-msg" />
-            )}
 
-            <div className="w-full">
+            <div className="w-full mb-3">
                 <input {...registerSignUpField('login')} type="text" placeholder="Usuário" className={`bg-gray-100 text-gray-900 ${registerErrors.login ? 'border border-red-500' : ''}`}/>
                 {registerErrors.login && <span className="text-red-500 text-xs text-left w-full block ml-2">{registerErrors.login.message}</span>}
             </div>
 
-            <div className="w-full">
+            <div className="w-full mb-3">
                 <input {...registerSignUpField('password')} type="password" placeholder="Senha" className={`bg-gray-100 text-gray-900 ${registerErrors.password ? 'border border-red-500' : ''}`}/>
                 {registerErrors.password && <span className="text-red-500 text-xs text-left w-full block ml-2">{registerErrors.password.message}</span>}
             </div>
 
-             <div className="w-full">
+             <div className="w-full mb-3">
                 <input {...registerSignUpField('confirmPassword')} type="password" placeholder="Confirme a Senha" className={`bg-gray-100 text-gray-900 ${registerErrors.confirmPassword ? 'border border-red-500' : ''}`}/>
                 {registerErrors.confirmPassword && <span className="text-red-500 text-xs text-left w-full block ml-2">{registerErrors.confirmPassword.message}</span>}
             </div>
@@ -143,16 +145,12 @@ export const LoginPage: React.FC = () => {
             </div>
             <span className="text-sm text-gray-600 mb-4">Use sua conta registrada</span>
 
-            {(statusMessage && !isRegisterMode) && (
-              <Message severity={statusMessage.type} text={statusMessage.text} className="w-full mb-2 custom-msg" />
-            )}
-
-            <div className="w-full">
+            <div className="w-full mb-3">
                 <input {...registerLoginField('login')} type="text" placeholder="Usuário" className={`bg-gray-100 text-gray-900 ${loginErrors.login ? 'border border-red-500' : ''}`}/>
                 {loginErrors.login && <span className="text-red-500 text-xs text-left w-full block ml-2">{loginErrors.login.message}</span>}
             </div>
 
-            <div className="w-full">
+            <div className="w-full mb-3">
                 <input {...registerLoginField('password')} type="password" placeholder="Senha" className={`bg-gray-100 text-gray-900 ${loginErrors.password ? 'border border-red-500' : ''}`}/>
                 {loginErrors.password && <span className="text-red-500 text-xs text-left w-full block ml-2">{loginErrors.password.message}</span>}
             </div>

@@ -4,7 +4,6 @@ import { tokenUtils } from '../utils/tokenUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-// Criar instância do axios
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
@@ -12,7 +11,6 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Interceptor de requisição - adiciona token JWT
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenUtils.getToken();
@@ -28,7 +26,6 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor de resposta - trata erros de autenticação
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
@@ -36,7 +33,6 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Se o erro for 401 (não autorizado) e ainda não tentamos renovar o token
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -58,27 +54,22 @@ apiClient.interceptors.response.use(
           const newToken = refreshResponse.data.token;
           tokenUtils.saveToken(newToken);
 
-          // Atualizar o header da requisição original com o novo token
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
           }
 
-          // Reenviar a requisição original
           return apiClient(originalRequest);
         } else {
-          // Token expirado, redirecionar para login
           tokenUtils.removeToken();
           window.location.href = '/login';
         }
       } catch (refreshError) {
-        // Erro ao renovar token, fazer logout
         tokenUtils.removeToken();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
 
-    // Se o erro for 403 (proibido), pode ser necessário fazer logout
     if (error.response?.status === 403) {
       tokenUtils.removeToken();
       window.location.href = '/login';

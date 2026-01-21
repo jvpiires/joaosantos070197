@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       tokenUtils.saveToken(newToken);
       setToken(newToken);
     } catch (error) {
-      console.error('Erro ao fazer login:', error);
+      // Erro será tratado pelo componente que chamou
       throw error;
     }
   };
@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.register(data);
     } catch (error) {
-      console.error('Erro ao registrar:', error);
+       // Erro será tratado pelo componente que chamou
       throw error;
     }
   };
