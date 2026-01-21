@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import br.gov.mt.seplag.sgd.infra.UserAlreadyExistsException;
 
 @RestController
 @RequestMapping("auth")
@@ -40,15 +41,12 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDTO data) {
-        if (this.repository.findByLogin(data.login()) != null)
-            return ResponseEntity.badRequest().body("Usuário já existe");
+        if (this.repository.findByLogin(data.login()) != null) {
+            throw new UserAlreadyExistsException("Este usuário já está cadastrado.");
+        }
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
-        User newUser = new User();
-        newUser.setLogin(data.login());
-        newUser.setPassword(encryptedPassword);
-
-        newUser.setRole(data.userRole());
+        User newUser = new User(null, data.login(), encryptedPassword, data.userRole());
 
         this.repository.save(newUser);
 
