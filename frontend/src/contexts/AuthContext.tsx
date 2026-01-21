@@ -22,7 +22,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Carregar token do localStorage ao inicializar
   useEffect(() => {
     const savedToken = tokenUtils.getToken();
     if (savedToken && !tokenUtils.isTokenExpired(savedToken)) {
@@ -34,7 +33,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  // Configurar verificação periódica para renovação do token
   useEffect(() => {
     if (!token) return;
 
@@ -49,10 +47,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Verificar a cada 1 minuto
     const interval = setInterval(checkTokenExpiration, 60000);
     
-    // Verificar imediatamente
     checkTokenExpiration();
 
     return () => clearInterval(interval);
@@ -66,7 +62,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       tokenUtils.saveToken(newToken);
       setToken(newToken);
     } catch (error) {
-      // Erro será tratado pelo componente que chamou
       throw error;
     }
   };
@@ -75,7 +70,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.register(data);
     } catch (error) {
-       // Erro será tratado pelo componente que chamou
       throw error;
     }
   };

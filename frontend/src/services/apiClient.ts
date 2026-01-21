@@ -40,7 +40,6 @@ apiClient.interceptors.response.use(
         const currentToken = tokenUtils.getToken();
         
         if (currentToken && !tokenUtils.isTokenExpired(currentToken)) {
-          // Tentar renovar o token
           const refreshResponse = await axios.post<{ token: string }>(
             `${API_URL}/auth/refresh`,
             {},
