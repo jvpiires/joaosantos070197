@@ -26,7 +26,7 @@ services:
     build: ./backend
     container_name: sgd-backend-v1
     ports:
-      - "8080:8080"
+      - "3333:3333"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/db_discografia_core
       SPRING_DATASOURCE_USERNAME: srv_discografia

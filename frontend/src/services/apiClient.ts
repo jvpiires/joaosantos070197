@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { tokenUtils } from '../utils/tokenUtils';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
