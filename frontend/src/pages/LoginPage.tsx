@@ -38,7 +38,7 @@ export const LoginPage: React.FC = () => {
   const showToast = (severity: 'success' | 'error', title: string, message: string) => {
     toast.current?.show({
       severity: severity,
-      content: (props) => (
+      content: () => (
         <div className={`flex items-center w-full max-w-sm p-4 rounded-lg shadow-xl border-l-4 bg-white ${
           severity === 'success' ? 'border-green-500' : 'border-red-500'
         }`}>

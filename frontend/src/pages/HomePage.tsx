@@ -1,33 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { artistService } from '../services/artistService';
-import  type { Artist } from '../types/models';
+import type { Artist } from '../types/models';
+import { GenericTable } from '../components/global/GenericTable';
+import { GenericFormModal } from '../components/global/GenericFormModal';
+import { GenericDetailsModal } from '../components/global/GenericDetailsModal';
+import { DashboardLayout } from '../components/DashboardLayout';
 
 // PrimeReact Imports
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-
-// Icons
-import { 
-    FaHome, 
-    FaMusic, 
-    FaCompactDisc, 
-    FaCog, 
-    FaSignOutAlt, 
-    FaPlus, 
-    FaEdit, 
-    FaTrash 
-} from 'react-icons/fa';
 
 import './HomePage.css';
 
 export const HomePage: React.FC = () => {
-    const { logout } = useAuth();
+    const { logout, username, userRole } = useAuth();
     const [artists, setArtists] = useState<Artist[]>([]);
     const [loading, setLoading] = useState(true);
     const [globalFilter, setGlobalFilter] = useState<string>('');
@@ -35,8 +22,10 @@ export const HomePage: React.FC = () => {
 
     // Dialog States
     const [artistDialog, setArtistDialog] = useState(false);
+    const [detailsDialog, setDetailsDialog] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [artist, setArtist] = useState<Partial<Artist>>({});
+    const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
     useEffect(() => {
         loadArtists();
@@ -112,158 +101,75 @@ export const HomePage: React.FC = () => {
         }
     };
 
-    // Table Templates ---------------------------
-    const header = (
-        <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 className="m-0 text-900">Gerenciar Artistas</h4>
-            <div className="p-input-icon-left">
-                <InputText 
-                    type="search" 
-                    onInput={(e) => setGlobalFilter(e.currentTarget.value)} 
-                    placeholder="Pesquisar..." 
-                    className="p-inputtext-sm"
-                />
-            </div>
-            <Button label="Novo Artista" icon={<FaPlus className="mr-2"/>} className="p-button-primary p-button-sm" onClick={openNew} />
-        </div>
-    );
-
-    const actionBodyTemplate = (rowData: Artist) => {
-        return (
-            <div className="flex gap-2 justify-content-center">
-                <Button 
-                    icon={<FaEdit />} 
-                    rounded 
-                    text 
-                    severity="info" 
-                    aria-label="Editar" 
-                    onClick={() => editArtist(rowData)} 
-                />
-                <Button 
-                    icon={<FaTrash />} 
-                    rounded 
-                    text 
-                    severity="danger" 
-                    aria-label="Deletar" 
-                    onClick={() => confirmDeleteArtist(rowData)} 
-                />
-            </div>
-        );
+    const handleArtistChange = (field: string, value: string | number) => {
+        setArtist({ ...artist, [field]: value });
     };
+    
+    const artistColumns = [
+        { field: 'name' as keyof Artist, header: 'Nome', style: { width: '70%' } }
+    ];
 
-    const dialogFooter = (
-        <React.Fragment>
-            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Salvar" icon="pi pi-check" onClick={saveArtist} />
-        </React.Fragment>
-    );
+    const artistFormFields = [
+        { name: 'name', label: 'Nome do Artista', type: 'text' as const, required: true, placeholder: 'Digite o nome do artista' }
+    ];
+
+    const artistDetailFields = [
+        { label: 'ID', field: 'id' },
+        { label: 'Nome', field: 'name' }
+    ];
 
     return (
-        <div className="dashboard-container">
+        <>
             <Toast ref={toast} />
             <ConfirmDialog />
 
-            {/* SIDEBAR */}
-            <aside className="sidebar">
-                <div className="sidebar-header">
-                    <div className="sidebar-logo">
-                        <FaMusic color="#3b82f6" />
-                        <span>MusicApp</span>
-                    </div>
-                </div>
-
-                <nav className="sidebar-menu">
-                    <a href="#" className="menu-item">
-                        <FaHome className="menu-icon" />
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="#" className="menu-item active">
-                        <FaMusic className="menu-icon" />
-                        <span>Artistas</span>
-                    </a>
-                    <a href="#" className="menu-item">
-                        <FaCompactDisc className="menu-icon" />
-                        <span>Álbuns</span>
-                    </a>
-                    <a href="#" className="menu-item">
-                        <FaCog className="menu-icon" />
-                        <span>Configurações</span>
-                    </a>
-                </nav>
-
-                <div className="sidebar-footer">
-                    <button onClick={logout} className="logout-btn">
-                        <FaSignOutAlt />
-                        <span>Sair da Conta</span>
-                    </button>
-                </div>
-            </aside>
-
-            {/* MAIN CONTENT */}
-            <main className="main-content">
-                {/* TOP HEADER */}
-                <header className="topbar">
-                    <div className="page-title">
-                        <h1>Artistas</h1>
-                    </div>
-                    
-                    <div className="user-profile">
-                        <div className="user-info">
-                            <span className="user-name">Administrador</span>
-                            <span className="user-role">Admin</span>
-                        </div>
-                        <div className="user-avatar">A</div>
-                    </div>
-                </header>
-
-                {/* CONTENT AREA */}
-                <div className="content-scroll">
-                    <div className="custom-card p-4">
-                        <DataTable 
-                            value={artists} 
-                            paginator 
-                            rows={10} 
-                            rowsPerPageOptions={[5, 10, 25]}
-                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} artistas"
-                            globalFilter={globalFilter} 
-                            header={header}
-                            emptyMessage="Nenhum artista encontrado."
-                            className="custom-datatable"
-                            tableStyle={{ minWidth: '50rem' }}
-                        >
-                            <Column field="name" header="Nome" sortable style={{ width: '70%' }}></Column>
-                            <Column body={actionBodyTemplate} header="Ações" exportable={false} style={{ width: '30%', textAlign: 'center' }}></Column>
-                        </DataTable>
-                    </div>
-                </div>
-            </main>
-
-            {/* DIALOG NEW/EDIT */}
-            <Dialog 
-                visible={artistDialog} 
-                style={{ width: '32rem' }} 
-                breakpoints={{ '960px': '75vw', '641px': '90vw' }} 
-                header={artist.id ? "Editar Artista" : "Novo Artista"} 
-                modal 
-                className="p-fluid" 
-                footer={dialogFooter} 
-                onHide={hideDialog}
+            <DashboardLayout
+                title="Artistas"
+                userName={username || 'Usuário'}
+                userRole={userRole || 'USER'}
+                onLogout={logout}
             >
-                <div className="field">
-                    <label htmlFor="name" className="font-bold">Nome</label>
-                    <InputText 
-                        id="name" 
-                        value={artist.name || ''} 
-                        onChange={(e) => setArtist({ ...artist, name: e.target.value })} 
-                        required 
-                        autoFocus 
-                        className={`w-full ${submitted && !artist.name ? 'p-invalid' : ''}`}
-                    />
-                    {submitted && !artist.name && <small className="p-error">Nome é obrigatório.</small>}
-                </div>
-            </Dialog>
-        </div>
+                <GenericTable<Artist>
+                    data={artists}
+                    columns={artistColumns}
+                    loading={loading}
+                    globalFilter={globalFilter}
+                    globalFilterFields={['name']}
+                    userRole={userRole}
+                    entityName="Artista"
+                    entityNamePlural="Artistas"
+                    onSearch={setGlobalFilter}
+                    onNew={openNew}
+                    onEdit={editArtist}
+                    onDelete={confirmDeleteArtist}
+                    onView={(artistData) => {
+                        setSelectedArtist(artistData);
+                        setDetailsDialog(true);
+                    }}
+                />
+            </DashboardLayout>
+
+            <GenericFormModal<Artist>
+                visible={artistDialog}
+                entity={artist}
+                submitted={submitted}
+                isEditing={!!artist.id}
+                entityName="Artista"
+                fields={artistFormFields}
+                onHide={hideDialog}
+                onSave={saveArtist}
+                onChange={handleArtistChange}
+            />
+
+            <GenericDetailsModal<Artist>
+                visible={detailsDialog}
+                entity={selectedArtist}
+                entityName="Artista"
+                fields={artistDetailFields}
+                titleField="name"
+                onHide={() => setDetailsDialog(false)}
+            />
+        </>
     );
 };
 

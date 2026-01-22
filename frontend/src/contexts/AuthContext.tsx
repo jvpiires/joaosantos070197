@@ -20,12 +20,19 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const savedToken = tokenUtils.getToken();
     if (savedToken && !tokenUtils.isTokenExpired(savedToken)) {
       setToken(savedToken);
+      
+      // Decode token para extrair username e role
+      const decoded = tokenUtils.decodeToken(savedToken);
+      setUsername(decoded?.sub || null);
+      setUserRole(decoded?.role || null);
     } else if (savedToken) {
       // Token expirado, remover
       tokenUtils.removeToken();
@@ -61,6 +68,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       tokenUtils.saveToken(newToken);
       setToken(newToken);
+      
+      // Decode token para extrair username e role
+      const decoded = tokenUtils.decodeToken(newToken);
+      setUsername(decoded?.sub || null);
+      setUserRole(decoded?.role || null);
     } catch (error) {
       throw error;
     }
@@ -77,6 +89,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = (): void => {
     tokenUtils.removeToken();
     setToken(null);
+    setUsername(null);
+    setUserRole(null);
   };
 
   const refreshToken = async (): Promise<void> => {
@@ -99,6 +113,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     token,
+    username,
+    userRole,
     isAuthenticated: !!token && !tokenUtils.isTokenExpired(token),
     login,
     register,
