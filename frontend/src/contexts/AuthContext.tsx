@@ -16,6 +16,7 @@ export const useAuth = () => {
 
 interface AuthProviderProps {
   children: ReactNode;
+  roles?: string[];
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {

@@ -1,9 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './contexts/AuthContext'
-import { LoginPage } from './pages/LoginPage'
-import { HomePage } from './pages/HomePage'
-import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
+import { CadastroPage } from './pages/cadastro/CadastroPage'
+import { useAuth } from './contexts/AuthContext'
+import { LoginPage } from './pages/login/LoginPage'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { HomePage } from './pages/home/HomePage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -21,6 +22,14 @@ function App() {
         element={
           <ProtectedRoute>
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cadastro"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <CadastroPage />
           </ProtectedRoute>
         }
       />

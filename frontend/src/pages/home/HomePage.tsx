@@ -1,17 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { artistService } from '../services/artistService';
-import type { Artist } from '../types/models';
-import { GenericTable } from '../components/global/GenericTable';
-import { GenericFormModal } from '../components/global/GenericFormModal';
-import { GenericDetailsModal } from '../components/global/GenericDetailsModal';
-import { DashboardLayout } from '../components/DashboardLayout';
+import { useAuth } from '../../contexts/AuthContext';
+import type { Artist } from '../../types/models';
+import { artistService } from '../../services/artistService';
+import { DashboardLayout } from '../../components/DashboardLayout';
+import { GenericTable } from '../../components/global/GenericTable';
+import { GenericFormModal } from '../../components/global/GenericFormModal';
+import { GenericDetailsModal } from '../../components/global/GenericDetailsModal';
+
 
 // PrimeReact Imports
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 import './HomePage.css';
+
 
 export const HomePage: React.FC = () => {
     const { logout, username, userRole } = useAuth();

@@ -1,13 +1,13 @@
+// This file has been moved to: c:\Users\joaopires\Desktop\projeto-seplag\joaosantos070197\frontend\src\pages\login\LoginPage.tsx
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '../contexts/AuthContext';
 import { Toast } from 'primereact/toast';
 import { FaUserPlus, FaSignInAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import './LoginPage.css';
-import { loginSchema, registerSchema } from '../types/zod.types';
-import type { LoginInput, RegisterInput } from '../types/zod.types';
+import { useAuth } from '../../contexts/AuthContext';
+import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '../../types/zod.types';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
