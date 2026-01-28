@@ -30,3 +30,10 @@ export const albumService = {
     await apiClient.delete(`${BASE_URL}/${id}`);
   }
 };
+
+export const uploadImage = async (albumId: number, formData: FormData) => {
+  const response = await apiClient.post(`/albums/${albumId}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};

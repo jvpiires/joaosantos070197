@@ -30,7 +30,7 @@ export interface Album {
 
 export interface AlbumImage {
   id: number;
-  url: string; // URL assinada ou pública
+  url: string;
   fileName: string;
 }
 

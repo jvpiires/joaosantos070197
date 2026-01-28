@@ -4,7 +4,8 @@ import { CadastroPage } from './pages/cadastro/CadastroPage'
 import { useAuth } from './contexts/AuthContext'
 import { LoginPage } from './pages/login/LoginPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { HomePage } from './pages/home/HomePage'
+import { ArtistasPage } from './pages/artistas/ArtistasPage'
+import { AlbumsPage } from './pages/albums/AlbumsPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -21,7 +22,15 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <ArtistasPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/albuns"
+        element={
+          <ProtectedRoute>
+            <AlbumsPage />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,7 @@
 import type { IconType } from 'react-icons';
 import { FaCog } from 'react-icons/fa';
 import { FaMusic } from 'react-icons/fa6';
+import { FaCompactDisc } from 'react-icons/fa6';
 
 export interface MenuRoute {
     path: string;
@@ -20,7 +21,12 @@ export const menuRoutes: MenuRoute[] = [
         roles: ['ADMIN', 'USER'],
         showInMenu: true
     },
-    // { path: '/albuns', label: 'Álbuns', icon: FaCompactDisc, roles: ['ADMIN', 'USER'], showInMenu: true },
+    {   path: '/albuns',
+        label: 'Álbuns',
+        icon: FaCompactDisc,
+        roles: ['ADMIN', 'USER'],
+        showInMenu: true
+    },
     {
         path: '/cadastro',
         label: 'Cadastro',
