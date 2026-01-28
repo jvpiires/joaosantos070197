@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { AuthContextType, LoginCredentials, RegisterData } from '../types/auth.types';
 import { authService } from '../services/authService';
 import { tokenUtils } from '../utils/tokenUtils';
+import Loading from '../components/Loading/Loading';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -24,21 +25,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [username, setUsername] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(true);
 
   useEffect(() => {
     const savedToken = tokenUtils.getToken();
     if (savedToken && !tokenUtils.isTokenExpired(savedToken)) {
       setToken(savedToken);
-      
-      // Decode token para extrair username e role
-      const decoded = tokenUtils.decodeToken(savedToken);
+            const decoded = tokenUtils.decodeToken(savedToken);
       setUsername(decoded?.sub || null);
       setUserRole(decoded?.role || null);
     } else if (savedToken) {
-      // Token expirado, remover
       tokenUtils.removeToken();
     }
     setIsLoading(false);
+
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -123,8 +128,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshToken,
   };
 
-  if (isLoading) {
-    return <div>Carregando...</div>;
+  if (showLoading) {
+    return <Loading />;
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
