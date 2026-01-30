@@ -1,0 +1,124 @@
+import React, { useState } from 'react';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '../../types/zod.types'; // caminho do seu arquivo
+
+interface AuthModalProps {
+  visible: boolean;
+  onHide: () => void;
+}
+
+export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const loginForm = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema)
+  });
+  const registerForm = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema)
+  });
+
+  const onLoginSubmit = (data: LoginInput) => {
+    console.log("Tentativa de Login:", data);
+  };
+
+  const onRegisterSubmit = (data: RegisterInput) => {
+    console.log("Tentativa de Registro:", data);
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    loginForm.reset();
+    registerForm.reset();
+  };
+
+  return (
+    <Dialog 
+      visible={visible} 
+      onHide={onHide}
+      draggable={false}
+      resizable={false}
+      showHeader={false}
+      className="font-mono border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+      contentClassName="p-6 md:p-10 bg-white"
+    >
+      <div className="flex flex-col space-y-6 w-full max-w-[320px] md:min-w-[400px]">
+        
+        {/* Cabeçalho do Modal */}
+        <div className="text-center space-y-3">
+          <div className="w-14 h-14 bg-black mx-auto flex items-center justify-center rounded-xl">
+            <span className="text-white text-3xl font-black italic">⚡</span>
+          </div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic">
+            {isLogin ? 'Songs - Login' : 'Songs - Register'}
+          </h2>
+        </div>
+
+        {/* Formulário Dinâmico */}
+        <form 
+          onSubmit={isLogin ? loginForm.handleSubmit(onLoginSubmit) : registerForm.handleSubmit(onRegisterSubmit)} 
+          className="flex flex-col space-y-5"
+        >
+          {/* Campo Usuário */}
+          <div className="flex flex-col space-y-1 mt-4">
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">User / Login</label>
+            <InputText 
+              {...(isLogin ? loginForm.register("login") : registerForm.register("login"))}
+              placeholder="seu_usuario"
+              className={`border-2 border-black p-3 rounded-none focus:shadow-none font-bold uppercase text-xs transition-all 
+                ${(isLogin ? loginForm.formState.errors.login : registerForm.formState.errors.login) ? 'border-red-500' : 'focus:bg-cyan-50'}`}
+            />
+            <ErrorMessage error={isLogin ? loginForm.formState.errors.login : registerForm.formState.errors.login} />
+          </div>
+
+          {/* Campo Senha */}
+          <div className="flex flex-col space-y-1 mt-4">
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Password</label>
+            <InputText 
+              {...(isLogin ? loginForm.register("password") : registerForm.register("password"))}
+              type="password"
+              placeholder="******"
+              className={`border-2 border-black p-3 rounded-none focus:shadow-none transition-all 
+                ${(isLogin ? loginForm.formState.errors.password : registerForm.formState.errors.password) ? 'border-red-500' : 'focus:bg-cyan-50'}`}
+            />
+            <ErrorMessage error={isLogin ? loginForm.formState.errors.password : registerForm.formState.errors.password} />
+          </div>
+
+          {/* Campo Confirmação (Só Registro) */}
+          {!isLogin && (
+            <div className="flex flex-col space-y-1 mt-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Confirm / Pass</label>
+              <InputText 
+                {...registerForm.register("confirmPassword")}
+                type="password"
+                placeholder="******"
+                className={`border-2 border-black p-3 rounded-none focus:shadow-none transition-all 
+                  ${registerForm.formState.errors.confirmPassword ? 'border-red-500' : 'focus:bg-cyan-50'}`}
+              />
+              <ErrorMessage error={registerForm.formState.errors.confirmPassword} />
+            </div>
+          )}
+
+          <Button 
+            label={isLogin ? "Logar" : "Registrar-se"} 
+            type="submit"
+            className="border-none py-3 mt-5 font-black uppercase tracking-[0.2em] hover:!bg-cyan-400 hover:!text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+          />
+        </form>
+
+        <button 
+          onClick={toggleMode}
+          className="border-none py-2 mt-4 font-black uppercase tracking-[0.1em] hover:cursor-pointer hover:upscale transition-all text-gray-500 text-[10px] italic"
+        >
+          {isLogin ? "> Criar uma conta" : "> Já tenho uma conta"}
+        </button>
+      </div>
+    </Dialog>
+  );
+};
+const ErrorMessage = ({ error }: { error: any }) => {
+  if (!error) return null;
+  return <span style={{color : "red"}} className="text-[12px] font-bold uppercase mt-2 italic ">{error.message}</span>;
+};

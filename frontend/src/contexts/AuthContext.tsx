@@ -38,12 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       tokenUtils.removeToken();
     }
     setIsLoading(false);
-
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 5000);
-
-    return () => clearTimeout(timer);
+    setShowLoading(false);
   }, []);
 
   useEffect(() => {
