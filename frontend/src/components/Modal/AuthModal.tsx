@@ -5,27 +5,81 @@ import { InputText } from 'primereact/inputtext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '../../types/zod.types'; // caminho do seu arquivo
+import { authService } from '../../services/authService';
+import { useNavigate } from 'react-router-dom';
+import type { RegisterData } from '../../types/auth.types';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'sonner';
+
 
 interface AuthModalProps {
   visible: boolean;
   onHide: () => void;
 }
 
+// Função de logout helper exportada para ser usada no Header
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userLogin');
+  localStorage.removeItem('userRole');
+};
+
 export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
+  const { login } = useAuth(); // Importante: Função do Contexto
+  
   const loginForm = useForm<LoginInput>({
     resolver: zodResolver(loginSchema)
   });
   const registerForm = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema)
+      resolver: zodResolver(registerSchema),
   });
 
-  const onLoginSubmit = (data: LoginInput) => {
-    console.log("Tentativa de Login:", data);
+  // Decodifica o JWT para extrair a role
+  const parseJwt = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return {};
+    }
   };
 
-  const onRegisterSubmit = (data: RegisterInput) => {
-    console.log("Tentativa de Registro:", data);
+  const onLoginSubmit = async (data: LoginInput) => {
+      try {
+          const response = await authService.login(data);
+          const claims = parseJwt(response.token);
+          const roleRaw = claims.role || claims.userRole || "USER";
+          const roleNormalizada = roleRaw.toString().toUpperCase();
+
+          login(response.token, data.login, roleNormalizada); 
+          navigate('/home');
+          onHide();
+      } catch (error: any) {
+          console.error("Erro Login:", error);
+          alert("Erro ao realizar login. Verifique as credenciais.");
+      }
+  };
+
+  const onRegisterSubmit = async (data: RegisterInput) => {
+    try {
+      const payload: RegisterData = {
+        login: data.login,
+        password: data.password,
+        userRole: data.userRole || "USER"
+      };
+      await authService.register(payload);
+      alert("Conta criada com sucesso! Faça login para continuar.");
+      setIsLogin(true); 
+      loginForm.setValue("login", data.login);
+    } catch (error: any) {
+      alert("Erro ao criar conta.");
+    }
   };
 
   const toggleMode = () => {
@@ -46,7 +100,6 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
     >
       <div className="flex flex-col space-y-6 w-full max-w-[320px] md:min-w-[400px]">
         
-        {/* Cabeçalho do Modal */}
         <div className="text-center space-y-3">
           <div className="w-14 h-14 bg-black mx-auto flex items-center justify-center rounded-xl">
             <span className="text-white text-3xl font-black italic">⚡</span>
@@ -56,12 +109,10 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
           </h2>
         </div>
 
-        {/* Formulário Dinâmico */}
         <form 
           onSubmit={isLogin ? loginForm.handleSubmit(onLoginSubmit) : registerForm.handleSubmit(onRegisterSubmit)} 
           className="flex flex-col space-y-5"
         >
-          {/* Campo Usuário */}
           <div className="flex flex-col space-y-1 mt-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">User / Login</label>
             <InputText 
@@ -73,7 +124,6 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
             <ErrorMessage error={isLogin ? loginForm.formState.errors.login : registerForm.formState.errors.login} />
           </div>
 
-          {/* Campo Senha */}
           <div className="flex flex-col space-y-1 mt-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Password</label>
             <InputText 
@@ -86,7 +136,6 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
             <ErrorMessage error={isLogin ? loginForm.formState.errors.password : registerForm.formState.errors.password} />
           </div>
 
-          {/* Campo Confirmação (Só Registro) */}
           {!isLogin && (
             <div className="flex flex-col space-y-1 mt-3">
               <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Confirm / Pass</label>
@@ -110,7 +159,8 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
 
         <button 
           onClick={toggleMode}
-          className="border-none py-2 mt-4 font-black uppercase tracking-[0.1em] hover:cursor-pointer hover:upscale transition-all text-gray-500 text-[10px] italic"
+          type="button" 
+          className="border-none py-2 mt-4 font-black uppercase tracking-[0.1em] hover:cursor-pointer hover:underline transition-all text-gray-500 text-[10px] italic bg-transparent"
         >
           {isLogin ? "> Criar uma conta" : "> Já tenho uma conta"}
         </button>
@@ -118,6 +168,7 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
     </Dialog>
   );
 };
+
 const ErrorMessage = ({ error }: { error: any }) => {
   if (!error) return null;
   return <span style={{color : "red"}} className="text-[12px] font-bold uppercase mt-2 italic ">{error.message}</span>;

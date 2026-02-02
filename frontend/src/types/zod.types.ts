@@ -27,6 +27,7 @@ export const registerSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Por favor, confirme sua senha'),
+  userRole: z.enum(["USER", "ADMIN"]),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],

@@ -1,131 +1,55 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import type { AuthContextType, LoginCredentials, RegisterData } from '../types/auth.types';
-import { authService } from '../services/authService';
-import { tokenUtils } from '../utils/tokenUtils';
-import Loading from '../components/Loading/Loading';
+import { createContext, useContext, useState, type ReactNode } from "react";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-  roles?: string[];
+interface AuthContextType {
+  isAuthenticated: boolean;
+  userRole: string | null;
+  userLogin: string | null;
+  login: (token: string, login: string, role: string) => void;
+  logout: () => void;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showLoading, setShowLoading] = useState(true);
+const AuthContext = createContext({} as AuthContextType);
 
-  useEffect(() => {
-    const savedToken = tokenUtils.getToken();
-    if (savedToken && !tokenUtils.isTokenExpired(savedToken)) {
-      setToken(savedToken);
-            const decoded = tokenUtils.decodeToken(savedToken);
-      setUsername(decoded?.sub || null);
-      setUserRole(decoded?.role || null);
-    } else if (savedToken) {
-      tokenUtils.removeToken();
-    }
-    setIsLoading(false);
-    setShowLoading(false);
-  }, []);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem("token");
+  });
 
-  useEffect(() => {
-    if (!token) return;
+  const [userRole, setUserRole] = useState<string | null>(() => {
+    return localStorage.getItem("userRole");
+  });
 
-    const checkTokenExpiration = async () => {
-      if (tokenUtils.isTokenExpiringSoon(token)) {
-        try {
-          await refreshToken();
-        } catch (error) {
-          console.error('Erro ao renovar token:', error);
-          logout();
-        }
-      }
-    };
+  const [userLogin, setUserLogin] = useState<string | null>(() => {
+    return localStorage.getItem("userLogin");
+  });
 
-    const interval = setInterval(checkTokenExpiration, 60000);
-    
-    checkTokenExpiration();
+  const login = (token: string, login: string, role: string) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("userLogin", login);
+    localStorage.setItem("userRole", role);
 
-    return () => clearInterval(interval);
-  }, [token]);
-
-  const login = async (credentials: LoginCredentials): Promise<void> => {
-    try {
-      const response = await authService.login(credentials);
-      const newToken = response.token;
-      
-      tokenUtils.saveToken(newToken);
-      setToken(newToken);
-      
-      // Decode token para extrair username e role
-      const decoded = tokenUtils.decodeToken(newToken);
-      setUsername(decoded?.sub || null);
-      setUserRole(decoded?.role || null);
-    } catch (error) {
-      throw error;
-    }
+    setIsAuthenticated(true);
+    setUserLogin(login);
+    setUserRole(role);
   };
 
-  const register = async (data: RegisterData): Promise<void> => {
-    try {
-      await authService.register(data);
-    } catch (error) {
-      throw error;
-    }
-  };
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userLogin");
+    localStorage.removeItem("userRole");
 
-  const logout = (): void => {
-    tokenUtils.removeToken();
-    setToken(null);
-    setUsername(null);
+    setIsAuthenticated(false);
+    setUserLogin(null);
     setUserRole(null);
   };
 
-  const refreshToken = async (): Promise<void> => {
-    if (!token) {
-      throw new Error('Nenhum token disponível para renovação');
-    }
-
-    try {
-      const response = await authService.refreshToken(token);
-      const newToken = response.token;
-      
-      tokenUtils.saveToken(newToken);
-      setToken(newToken);
-    } catch (error) {
-      console.error('Erro ao renovar token:', error);
-      logout();
-      throw error;
-    }
-  };
-
-  const value: AuthContextType = {
-    token,
-    username,
-    userRole,
-    isAuthenticated: !!token && !tokenUtils.isTokenExpired(token),
-    login,
-    register,
-    logout,
-    refreshToken,
-  };
-
-  if (showLoading) {
-    return <Loading />;
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{ isAuthenticated, userRole, userLogin, login, logout }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+export const useAuth = () => useContext(AuthContext);

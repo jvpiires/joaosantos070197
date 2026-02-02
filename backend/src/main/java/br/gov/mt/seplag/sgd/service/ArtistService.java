@@ -38,6 +38,7 @@ public class ArtistService {
     public ArtistDTO create(ArtistDTO dto) {
         Artist artist = new Artist();
         artist.setName(dto.name());
+        artist.setAno(dto)
         repository.save(artist);
         return toDTO(artist);
     }

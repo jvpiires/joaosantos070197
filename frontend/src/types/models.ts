@@ -34,7 +34,6 @@ export interface AlbumImage {
   fileName: string;
 }
 
-// Params para filtros
 export interface ArtistQueryParams {
   page?: number;
   size?: number;
