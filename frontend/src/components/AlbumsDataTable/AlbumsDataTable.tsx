@@ -39,7 +39,7 @@ export function AlbumsDataTable() {
   async function loadAlbums() {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/albums');
+      const response = await apiClient.get('/api/v1/albums');
       setAlbums(response.data.content || response.data);
     } catch (error) {
       toast.error('Erro ao carregar álbuns');
@@ -51,7 +51,7 @@ export function AlbumsDataTable() {
 
   async function loadArtists() {
     try {
-      const response = await apiClient.get('/api/artists');
+      const response = await apiClient.get('/api/v1/artists');
       setArtists(response.data.content || response.data);
     } catch (error) {
       toast.error('Erro ao carregar artistas');
@@ -83,10 +83,10 @@ export function AlbumsDataTable() {
       };
 
       if (isEditing) {
-        await apiClient.put(`/api/albums/${formData.id}`, payload);
+        await apiClient.put(`/api/v1/albums/${formData.id}`, payload);
         toast.success('Álbum atualizado com sucesso');
       } else {
-        await apiClient.post('/api/albums', payload);
+        await apiClient.post('/api/v1/albums', payload);
         toast.success('Álbum criado com sucesso');
       }
       setShowDialog(false);
@@ -100,7 +100,7 @@ export function AlbumsDataTable() {
   async function handleDelete(id: number) {
     if (window.confirm('Tem certeza que deseja deletar este álbum?')) {
       try {
-        await apiClient.delete(`/api/albums/${id}`);
+        await apiClient.delete(`/api/v1/albums/${id}`);
         toast.success('Álbum deletado com sucesso');
         await loadAlbums();
       } catch (error) {

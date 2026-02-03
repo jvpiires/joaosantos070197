@@ -41,25 +41,31 @@ public class SecurityConfig {
                         // 1. Rotas de Autenticação (Públicas)
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").authenticated()
 
-                        // 2. Leitura Pública (Apenas GET de artistas/álbuns)
-                        .requestMatchers(HttpMethod.GET, "/api/artists", "/api/artists/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/albums", "/api/albums/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/regionais", "/api/regionais/**").permitAll()
-
-                        // 3. WebSocket e Documentação
+                        // 2. WebSocket e Documentação
                         .requestMatchers("/ws/**", "/ws/sgd/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // 4. Gestão de Usuários (Apenas ADMIN)
+                        // 3. Gestão de Usuários (Apenas ADMIN) - DEVE VIR ANTES DAS REGRAS GENÉRICAS
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
 
-                        // 5. Modificações (POST, PUT, DELETE) - Apenas Autenticados
-                        .requestMatchers(HttpMethod.POST, "/api/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").authenticated()
+                        // 4. ARTISTAS - Regras específicas DEVEM VIR ANTES das genéricas
+                        .requestMatchers(HttpMethod.POST, "/api/v1/artists").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/artists/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/artists/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/artists", "/api/v1/artists/**").permitAll()
 
-                        // 6. Tudo mais exige autenticação
+                        // 5. ÁLBUNS - Regras específicas
+                        .requestMatchers(HttpMethod.POST, "/api/v1/albums").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/albums/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/albums/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/albums", "/api/v1/albums/**").permitAll()
+
+                        // 6. REGIONAIS - Apenas leitura pública
+                        .requestMatchers(HttpMethod.GET, "/api/regionais", "/api/regionais/**").permitAll()
+
+                        // 7. Tudo mais exige autenticação
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)

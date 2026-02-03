@@ -154,7 +154,13 @@ public class AlbumService {
                 .collect(Collectors.toList());
 
         List<ArtistDTO> artistDtos = album.getArtists().stream()
-                .map(artist -> new ArtistDTO(artist.getId(), artist.getName()))
+                .map(artist -> new ArtistDTO(
+                    artist.getId(), 
+                    artist.getName(), 
+                    artist.getImageUrl(), 
+                    artist.getYear(), 
+                    null // Não incluir álbuns aqui para evitar recursão circular
+                ))
                 .collect(Collectors.toList());
 
         return new AlbumDTO(

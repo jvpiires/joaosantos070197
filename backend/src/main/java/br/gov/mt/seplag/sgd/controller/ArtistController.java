@@ -1,7 +1,9 @@
 package br.gov.mt.seplag.sgd.controller;
 
 import br.gov.mt.seplag.sgd.dto.ArtistDTO;
+import br.gov.mt.seplag.sgd.dto.CreateArtistRequest;
 import br.gov.mt.seplag.sgd.service.ArtistService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,20 +13,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/artists")
+@RequestMapping("/api/v1/artists")
 @Tag(name = "Artistas", description = "Endpoints para gerenciamento de Artistas")
 @SecurityRequirement(name = "bearer-key")
 public class ArtistController {
 
     @Autowired
     private ArtistService service;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping
     @Operation(summary = "Listar artistas", description = "Lista artistas com paginação e filtro opcional por nome (requisito f)")
@@ -43,13 +50,23 @@ public class ArtistController {
         return ResponseEntity.ok(service.findById(id));
     }
 
-    @PostMapping
-    @Operation(summary = "Criar artista", description = "Cadastra um novo artista")
-    public ResponseEntity<ArtistDTO> create(@RequestBody @Valid ArtistDTO dto) {
-        ArtistDTO crated = service.create(dto);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(crated.id()).toUri();
-        return ResponseEntity.created(uri).body(crated);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Criar artista", description = "Cadastra um novo artista com imagem, ano e álbuns")
+    public ResponseEntity<ArtistDTO> create(
+            @RequestPart("data") String dataJson,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        try {
+            // Deserializar JSON para CreateArtistRequest
+            CreateArtistRequest request = objectMapper.readValue(dataJson, CreateArtistRequest.class);
+            
+            ArtistDTO created = service.create(request, image);
+            URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                    .buildAndExpand(created.id()).toUri();
+            return ResponseEntity.created(uri).body(created);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao processar requisição: " + e.getMessage(), e);
+        }
     }
 
     @PutMapping("/{id}")

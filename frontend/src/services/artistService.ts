@@ -16,8 +16,34 @@ export const artistService = {
     return response.data;
   },
 
-  create: async (data: { name: string }): Promise<Artist> => {
-    const response = await apiClient.post<Artist>(BASE_URL, data);
+  create: async (data: { 
+    name: string; 
+    year?: number; 
+    image?: File | null; 
+    albumIds?: number[] 
+  }): Promise<Artist> => {
+    const formData = new FormData();
+    
+    // Criar objeto JSON com os dados do artista
+    const artistData = {
+      name: data.name,
+      year: data.year || null,
+      albumIds: data.albumIds || []
+    };
+    
+    // Adicionar JSON como string
+    formData.append('data', JSON.stringify(artistData));
+    
+    // Adicionar imagem se fornecida
+    if (data.image) {
+      formData.append('image', data.image);
+    }
+    
+    const response = await apiClient.post<Artist>(BASE_URL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 

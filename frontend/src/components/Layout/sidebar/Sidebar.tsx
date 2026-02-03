@@ -25,7 +25,6 @@ export const Sidebar = () => {
           <div className="space-y-1">
             <p className="px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Sua Biblioteca</p>
             <MenuItem icon="pi pi-heart" label="Favoritos" to="/favorites" />
-            <MenuItem icon="pi pi-list" label="Playlists" to="/playlists" />
           </div>
         )}
 
@@ -35,8 +34,6 @@ export const Sidebar = () => {
             <p className="px-4 text-[11px] font-bold text-red-500 uppercase tracking-wider mb-3 flex items-center gap-2">
               <i className="pi pi-shield text-[10px]"></i> Admin Zone
             </p>
-            <MenuItem icon="pi pi-plus-circle" label="Novo Artista" to="/z_admin/new-artist" />
-            <MenuItem icon="pi pi-folder-open" label="Novo Album" to="/z_admin/new-album" />
             <MenuItem icon="pi pi-users" label="Usuários" to="/z_admin/users" />
             <MenuItem icon="pi pi-map" label="Regionais" to="/z_admin/regionais" />
           </div>

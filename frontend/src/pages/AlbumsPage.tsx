@@ -33,7 +33,7 @@ export const AlbumsPage = () => {
       const params: any = {};
       if (artistId) params.artistId = artistId;
       
-      const response = await apiClient.get('/api/albums', { params });
+      const response = await apiClient.get('/api/v1/albums', { params });
       setAlbums(response.data.content || response.data);
     } catch (error) {
       console.error('Erro ao carregar álbuns:', error);

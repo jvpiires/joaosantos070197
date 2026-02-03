@@ -33,5 +33,28 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// --- ARTIST SCHEMA ---
+export const artistSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  year: z.number().optional().nullable(),
+  image: z.any().optional(),
+  albumIds: z.array(z.number()).optional()
+});
+
+// --- ALBUM SCHEMA ---
+export const albumSchema = z.object({
+  title: z.string()
+    .trim()
+    .min(1, 'Título do álbum é obrigatório')
+    .min(2, 'Título deve ter pelo menos 2 caracteres')
+    .max(100, 'Título deve ter no máximo 100 caracteres'),
+  artistId: z.preprocess(
+    (val) => Number(val), 
+    z.number().min(1, 'Selecione um artista')
+  ),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ArtistInput = z.infer<typeof artistSchema>;
+export type AlbumInput = z.infer<typeof albumSchema>;

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { webSocketService } from '../../services/webSocketService';
-import { type AlbumNotification } from '../../types/api.types';
+import { webSocketService, type Notification } from '../../services/webSocketService';
 import './NotificationCenter.css';
 
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState<AlbumNotification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -31,9 +30,16 @@ export function NotificationCenter() {
     };
   }, []);
 
-  function showNotificationToast(notification: AlbumNotification) {
+  function showNotificationToast(notification: Notification) {
     // Usar toast para exibir notificação
-    const message = `Novo álbum: "${notification.title}" de ${notification.artistName}`;
+    let message = '';
+    if ('title' in notification) {
+      // AlbumNotification
+      message = `Novo álbum: "${notification.title}" de ${notification.artistName}`;
+    } else {
+      // ArtistNotification
+      message = `Novo artista: "${notification.name}"${notification.year ? ` (${notification.year})` : ''}`;
+    }
     // Você pode integrar com 'sonner' ou outro toast aqui
     console.log('Notificação:', message);
   }
@@ -83,12 +89,27 @@ export function NotificationCenter() {
               notifications.map((notification, index) => (
                 <div key={index} className="notification-item">
                   <div className="notification-content">
-                    <div className="notification-title">
-                      Novo Álbum: {notification.title}
-                    </div>
-                    <div className="notification-artist">
-                      {notification.artistName}
-                    </div>
+                    {'title' in notification ? (
+                      <>
+                        <div className="notification-title">
+                          Novo Álbum: {notification.title}
+                        </div>
+                        <div className="notification-artist">
+                          {notification.artistName}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="notification-title">
+                          Novo Artista: {notification.name}
+                        </div>
+                        {notification.year && (
+                          <div className="notification-artist">
+                            {notification.year}
+                          </div>
+                        )}
+                      </>
+                    )}
                     <div className="notification-time">
                       {new Date(notification.createdAt).toLocaleString('pt-BR')}
                     </div>

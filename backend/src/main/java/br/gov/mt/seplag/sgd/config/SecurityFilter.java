@@ -28,37 +28,22 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var token = this.recoverToken(request);
 
-        System.out.println("=== SECURITY FILTER DEBUG ===");
-        System.out.println("URI: " + request.getRequestURI());
-        System.out.println("Method: " + request.getMethod());
-        System.out.println("Token presente? " + (token != null));
-
         if (token != null) {
-            var subject = tokenService.validateToken(token);
-            System.out.println("Token válido? Subject: " + subject);
+            try {
+                var subject = tokenService.validateToken(token);
 
-            if (!subject.isEmpty()) {
-                UserDetails user = repository.findByLogin(subject);
-
-                if (user != null) {
-                    System.out.println("Usuário encontrado: " + user.getUsername());
-                    System.out.println("Authorities do usuário: " + user.getAuthorities());
-
-                    var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    System.out.println("Autenticação setada no contexto!");
-                } else {
-                    System.out.println("ERRO: Usuário não encontrado no banco!");
+                if (subject != null && !subject.isEmpty()) {
+                    UserDetails user = userRepository.findByLogin(subject);
+                    if (user != null) {
+                        var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
-            } else {
-                System.out.println("ERRO: Token inválido ou expirado!");
+            } catch (Exception e) {
+                System.out.println("Token inválido ou expirado.");
             }
-        } else {
-            System.out.println("Nenhum token enviado na requisição");
         }
 
-        System.out.println("=== FIM DEBUG ===\n");
         filterChain.doFilter(request, response);
     }
 

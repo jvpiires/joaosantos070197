@@ -4,11 +4,10 @@ import { HomePage } from './pages/home/HomePage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { RegionaisPage } from './pages/admin/RegionaisPage';
 import { AdminAlbumsPage } from './pages/admin/AdminAlbumsPage';
-import { ArtistsPage } from './pages/ArtistsPage';
+import { ArtistsPage } from './pages/artists/ArtistsPage';
 import { AlbumsPage } from './pages/AlbumsPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { Toaster } from 'sonner';
-
 function AppContent() {
 
 

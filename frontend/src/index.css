@@ -48,6 +48,55 @@ body {
   border-color: #0a0a0a;
 }
 
+/* PrimeReact InputNumber - Brutalist Style */
+.p-inputnumber input {
+  font-family: var(--font-family) !important;
+  font-weight: 700;
+}
+
+/* PrimeReact MultiSelect - Brutalist Style */
+.p-multiselect {
+  font-family: var(--font-family) !important;
+}
+
+.p-multiselect .p-multiselect-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.p-multiselect-panel {
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 1) !important;
+  font-family: var(--font-family) !important;
+}
+
+.p-multiselect-item {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.p-multiselect-item:hover {
+  background-color: #e0f7fa !important;
+}
+
+.p-multiselect .p-multiselect-token {
+  background: #000 !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+}
+
+.p-multiselect .p-multiselect-token .p-multiselect-token-icon {
+  color: #fff !important;
+}
+
 .auth-toast .p-toast-message.p-toast-message-warn {
   background: #fff6e5;
   border-color: #0a0a0a;

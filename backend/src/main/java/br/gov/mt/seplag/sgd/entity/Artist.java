@@ -23,6 +23,12 @@ public class Artist {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "year")
+    private Integer year;
+
     @ManyToMany(mappedBy = "artists")
     private List<Album> albums = new ArrayList<>();
 

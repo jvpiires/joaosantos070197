@@ -18,6 +18,14 @@ export interface Pageable<T> {
 export interface Artist {
   id: number;
   name: string;
+  imageUrl?: string;
+  year?: number;
+  albums?: AlbumSummary[];
+}
+
+export interface AlbumSummary {
+  id: number;
+  title: string;
 }
 
 export interface Album {

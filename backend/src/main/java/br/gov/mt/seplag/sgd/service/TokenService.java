@@ -45,7 +45,16 @@ public class TokenService {
         }
     }
 
+    public String getSubject(String token) {
+        try {
+            return JWT.decode(token).getSubject();
+        } catch (Exception exception) {
+            System.err.println("❌ Erro ao decodificar token: " + exception.getMessage());
+            return null;
+        }
+    }
+
     private Instant genExpirationDate() {
-        return LocalDateTime.now().plusMinutes(2).toInstant(ZoneOffset.of("-04:00"));
+        return LocalDateTime.now().plusMinutes(5).toInstant(ZoneOffset.of("-04:00"));
     }
 }
