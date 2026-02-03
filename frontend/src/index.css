@@ -19,3 +19,42 @@ body {
     font-family: var(--font-family) !important;
 }
 
+/* Auth Toast (custom look) */
+.auth-toast .p-toast-message {
+  border: 2px solid #000;
+  border-radius: 0;
+  box-shadow: 6px 6px 0px #000;
+  background: #fffbe6;
+}
+
+.auth-toast .p-toast-message .p-toast-summary {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.auth-toast .p-toast-message .p-toast-detail {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.auth-toast .p-toast-message.p-toast-message-success {
+  background: #ecffea;
+  border-color: #0a0a0a;
+}
+
+.auth-toast .p-toast-message.p-toast-message-error {
+  background: #ffecec;
+  border-color: #0a0a0a;
+}
+
+.auth-toast .p-toast-message.p-toast-message-warn {
+  background: #fff6e5;
+  border-color: #0a0a0a;
+}
+
+.auth-toast .p-toast-message.p-toast-message-info {
+  background: #e9f5ff;
+  border-color: #0a0a0a;
+}
+

@@ -38,6 +38,7 @@ export const Sidebar = () => {
             <MenuItem icon="pi pi-plus-circle" label="Novo Artista" to="/z_admin/new-artist" />
             <MenuItem icon="pi pi-folder-open" label="Gerenciar" to="/z_admin/manage" />
             <MenuItem icon="pi pi-users" label="Usuários" to="/z_admin/users" />
+            <MenuItem icon="pi pi-map" label="Regionais" to="/z_admin/regionais" />
           </div>
         )}
       </div>

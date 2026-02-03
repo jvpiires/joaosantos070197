@@ -23,7 +23,7 @@ public class Artist {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "artists")
     private List<Album> albums = new ArrayList<>();
 
     @CreationTimestamp

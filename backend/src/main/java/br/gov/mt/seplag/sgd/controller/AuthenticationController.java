@@ -46,7 +46,9 @@ public class AuthenticationController {
         }
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
-        User newUser = new User(null, data.login(), encryptedPassword, data.userRole());
+        // Se userRole for null, usar USER como padrão
+        br.gov.mt.seplag.sgd.enums.UserRole role = data.userRole() != null ? data.userRole() : br.gov.mt.seplag.sgd.enums.UserRole.USER;
+        User newUser = new User(null, data.login(), encryptedPassword, role);
 
         this.repository.save(newUser);
 

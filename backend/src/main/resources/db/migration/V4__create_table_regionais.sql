@@ -1,0 +1,9 @@
+CREATE TABLE regionais (
+    id INTEGER PRIMARY KEY,
+    nome VARCHAR(200) NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_regionais_ativo ON regionais(ativo);

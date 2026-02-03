@@ -1,7 +1,7 @@
 package br.gov.mt.seplag.sgd.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 public record AlbumDTO(
     Long id,
@@ -9,10 +9,12 @@ public record AlbumDTO(
     @NotBlank(message = "O título do álbum é obrigatório")
     String title,
     
-    @NotNull(message = "O ID do artista é obrigatório")
-    Long artistId,
+    List<ArtistDTO> artists,
     
-    String artistName, // Opcional, para exibição na listagem
+    List<Long> artistIds, // Para POST/PUT com lista de IDs
 
-    java.util.List<AlbumImageDTO> images // Imagens do álbum
+    List<AlbumImageDTO> images, // Imagens do álbum
+    
+    java.time.LocalDateTime createdAt
 ) {}
+

@@ -18,9 +18,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/v1/artists")
+@RequestMapping("/api/artists")
 @Tag(name = "Artistas", description = "Endpoints para gerenciamento de Artistas")
-@SecurityRequirement(name = "bearer-key") // Integração futura com Swagger
+@SecurityRequirement(name = "bearer-key")
 public class ArtistController {
 
     @Autowired

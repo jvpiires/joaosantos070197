@@ -1,23 +1,21 @@
-import React, { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
+import { Toast } from 'primereact/toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '../../types/zod.types'; // caminho do seu arquivo
+import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '../../types/zod.types';
 import { authService } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import type { RegisterData } from '../../types/auth.types';
 import { useAuth } from '../../contexts/AuthContext';
-import { toast } from 'sonner';
-
 
 interface AuthModalProps {
   visible: boolean;
   onHide: () => void;
 }
 
-// Função de logout helper exportada para ser usada no Header
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('userLogin');
@@ -27,16 +25,23 @@ export const logout = () => {
 export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
-  const { login } = useAuth(); // Importante: Função do Contexto
+  const { login } = useAuth();
+  const toast = useRef<Toast | null>(null);
   
   const loginForm = useForm<LoginInput>({
     resolver: zodResolver(loginSchema)
   });
   const registerForm = useForm<RegisterInput>({
-      resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      userRole: "USER"
+    }
   });
 
-  // Decodifica o JWT para extrair a role
+  const showToast = (severity: "success" | "info" | "warn" | "error", summary: string, detail: string) => {
+    toast.current?.show({ severity, summary, detail, life: 5000 });
+  };
+
   const parseJwt = (token: string) => {
     try {
       const base64Url = token.split('.')[1];
@@ -57,12 +62,14 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
           const roleRaw = claims.role || claims.userRole || "USER";
           const roleNormalizada = roleRaw.toString().toUpperCase();
 
-          login(response.token, data.login, roleNormalizada); 
+          login(response.token, data.login, roleNormalizada);
           navigate('/home');
           onHide();
+          showToast("success", "Login OK", "Acesso liberado.");
       } catch (error: any) {
           console.error("Erro Login:", error);
-          alert("Erro ao realizar login. Verifique as credenciais.");
+          const detail = error?.response?.data?.message || error?.message || "Erro ao realizar login. Verifique as credenciais.";
+          showToast("error", "Login recusado", detail);
       }
   };
 
@@ -74,11 +81,13 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
         userRole: data.userRole || "USER"
       };
       await authService.register(payload);
-      alert("Conta criada com sucesso! Faça login para continuar.");
+      showToast("success", "Conta criada", "Faça login para continuar.");
       setIsLogin(true); 
       loginForm.setValue("login", data.login);
+      registerForm.reset();
     } catch (error: any) {
-      alert("Erro ao criar conta.");
+      const detail = error?.response?.data?.message || error?.message || "Erro ao criar conta.";
+      showToast("error", "Cadastro recusado", detail);
     }
   };
 
@@ -98,6 +107,7 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
       className="font-mono border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
       contentClassName="p-6 md:p-10 bg-white"
     >
+      <Toast ref={toast} className="auth-toast" appendTo={document.body} baseZIndex={10000} />
       <div className="flex flex-col space-y-6 w-full max-w-[320px] md:min-w-[400px]">
         
         <div className="text-center space-y-3">
