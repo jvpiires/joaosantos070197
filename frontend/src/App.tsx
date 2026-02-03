@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from './pages/home/HomePage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { RegionaisPage } from './pages/admin/RegionaisPage';
@@ -8,14 +8,9 @@ import { ArtistsPage } from './pages/ArtistsPage';
 import { AlbumsPage } from './pages/AlbumsPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { Toaster } from 'sonner';
-import { useEffect } from 'react';
 
 function AppContent() {
-  const location = useLocation();
-  
-  useEffect(() => {
-    console.log('Navegando para:', location.pathname);
-  }, [location]);
+
 
   return (
     <Routes>

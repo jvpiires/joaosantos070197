@@ -19,21 +19,18 @@ public class UserController {
     private UserService service;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDTO>> listar() {
         List<UserDTO> users = service.findAll();
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> obterPorId(@PathVariable Long id) {
         UserDTO user = service.findById(id);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}/role")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> alterarRole(
             @PathVariable Long id,
             @RequestBody @Valid ChangeRoleDTO dto) {

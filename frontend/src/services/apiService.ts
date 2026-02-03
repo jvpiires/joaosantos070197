@@ -39,7 +39,7 @@ class ApiService {
     try {
       this.loadingSubject.next(true);
       await apiClient.put(`/api/users/${userId}/role`, { role });
-      await this.loadUsers(); // Recarregar lista
+      await this.loadUsers();
       this.errorSubject.next(null);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Erro ao alterar role';
@@ -103,5 +103,5 @@ class ApiService {
   }
 }
 
-// Singleton
+
 export const apiService = new ApiService();

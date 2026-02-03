@@ -25,7 +25,6 @@ class WebSocketService {
       reconnectDelay: 5000,
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
-        console.log('WebSocket conectado');
         this.connectionSubject.next(true);
         this.client?.subscribe('/topic/albums', (message: IMessage) => {
           try {
@@ -45,7 +44,6 @@ class WebSocketService {
         this.connectionSubject.next(false);
       },
       onWebSocketClose: () => {
-        console.log('WebSocket desconectado');
         this.connectionSubject.next(false);
       }
     });

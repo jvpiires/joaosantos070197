@@ -1,13 +1,20 @@
 package br.gov.mt.seplag.sgd.enums;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
 public enum UserRole {
-    ADMIN("admin"),
-    USER("user");
+    ADMIN("ADMIN"),
+    USER("USER");
 
     private final String role;
+
+    UserRole(String role) {
+        this.role = role;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
 }

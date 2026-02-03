@@ -58,7 +58,7 @@ class UserServiceTest {
 
         assertNotNull(result);
         assertEquals("testuser", result.login());
-        assertEquals("user", result.role());
+        assertEquals("USER", result.role());
         verify(userRepository, times(1)).findById(1L);
     }
 
@@ -72,7 +72,7 @@ class UserServiceTest {
         UserDTO result = userService.changeRole(1L, dto);
 
         assertNotNull(result);
-        assertEquals("admin", result.role());
+        assertEquals("ADMIN", result.role());
         assertEquals(UserRole.ADMIN, testUser.getRole());
         verify(userRepository, times(1)).save(testUser);
     }

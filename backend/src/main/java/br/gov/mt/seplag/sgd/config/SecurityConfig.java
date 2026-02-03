@@ -38,19 +38,35 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        // 1. Rotas de Autenticação (Públicas)
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/artists").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/albums").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/regionais").permitAll()
-                        .requestMatchers("/ws/sgd/**", "/ws/**").permitAll()
+
+                        // 2. Leitura Pública (Apenas GET de artistas/álbuns)
+                        .requestMatchers(HttpMethod.GET, "/api/artists", "/api/artists/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/albums", "/api/albums/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/regionais", "/api/regionais/**").permitAll()
+
+                        // 3. WebSocket e Documentação
+                        .requestMatchers("/ws/**", "/ws/sgd/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // 4. Gestão de Usuários (Apenas ADMIN)
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+
+                        // 5. Modificações (POST, PUT, DELETE) - Apenas Autenticados
+                        .requestMatchers(HttpMethod.POST, "/api/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/**").authenticated()
+
+                        // 6. Tudo mais exige autenticação
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
