@@ -17,9 +17,7 @@ class ApiService {
   public loading$ = this.loadingSubject.asObservable();
   public error$ = this.errorSubject.asObservable();
 
-  constructor() {
-    // Client já vem com interceptors configurados em apiClient
-  }
+  constructor() {}
 
   // ===== USERS =====
   async loadUsers(): Promise<void> {

@@ -36,7 +36,7 @@ export const Sidebar = () => {
               <i className="pi pi-shield text-[10px]"></i> Admin Zone
             </p>
             <MenuItem icon="pi pi-plus-circle" label="Novo Artista" to="/z_admin/new-artist" />
-            <MenuItem icon="pi pi-folder-open" label="Gerenciar" to="/z_admin/manage" />
+            <MenuItem icon="pi pi-folder-open" label="Novo Album" to="/z_admin/new-album" />
             <MenuItem icon="pi pi-users" label="Usuários" to="/z_admin/users" />
             <MenuItem icon="pi pi-map" label="Regionais" to="/z_admin/regionais" />
           </div>

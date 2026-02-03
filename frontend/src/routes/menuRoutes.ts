@@ -49,6 +49,13 @@ export const menuRoutes: MenuRoute[] = [
         showInMenu: true
     },
     {
+        path: '/z_admin/new-album',
+        label: 'Novo Álbum',
+        icon: FaCompactDisc,
+        roles: ['ADMIN'],
+        showInMenu: true
+    },
+    {
         path: '/z_admin/regionais',
         label: 'Regionais',
         icon: FaCog,
