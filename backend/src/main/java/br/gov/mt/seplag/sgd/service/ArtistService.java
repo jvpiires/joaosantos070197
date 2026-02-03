@@ -38,7 +38,6 @@ public class ArtistService {
     public ArtistDTO create(ArtistDTO dto) {
         Artist artist = new Artist();
         artist.setName(dto.name());
-        artist.setAno(dto)
         repository.save(artist);
         return toDTO(artist);
     }
@@ -49,7 +48,6 @@ public class ArtistService {
                 .orElseThrow(() -> new EntityNotFoundException("Artista não encontrado"));
         
         artist.setName(dto.name());
-        // O JPA detecta a alteração e atualiza automaticamente no fim da transação
         return toDTO(artist);
     }
 
