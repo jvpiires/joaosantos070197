@@ -25,7 +25,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
         try {
             Object principal = SecurityContextHolder.getContext().getAuthentication();
             
-            // Se usuário está autenticado, aplicar rate limit
             if (principal != null && principal.toString() != null && !principal.toString().equals("anonymousUser")) {
                 String userId = principal.toString();
                 

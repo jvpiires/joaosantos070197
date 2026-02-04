@@ -11,9 +11,9 @@ public record AlbumDTO(
     
     List<ArtistDTO> artists,
     
-    List<Long> artistIds, // Para POST/PUT com lista de IDs
+    List<Long> artistIds,
 
-    List<AlbumImageDTO> images, // Imagens do álbum
+    List<AlbumImageDTO> images,
     
     java.time.LocalDateTime createdAt
 ) {}

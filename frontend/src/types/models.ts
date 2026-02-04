@@ -31,9 +31,9 @@ export interface AlbumSummary {
 export interface Album {
   id: number;
   title: string;
-  artistId: number;
-  artistName?: string;
-  images: AlbumImage[];
+  images?: AlbumImage[];
+  artists?: Artist[];
+  createdAt?: string;
 }
 
 export interface AlbumImage {

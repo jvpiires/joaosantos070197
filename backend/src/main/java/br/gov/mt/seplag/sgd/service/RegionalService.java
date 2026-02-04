@@ -37,7 +37,6 @@ public class RegionalService {
         log.info("Iniciando sincronização de regionais com a API externa");
         
         try {
-            // Fetch dos regionais da API externa
             RegionalDTO[] regionaisExternos = restTemplate.getForObject(
                 EXTERNAL_API_URL,
                 RegionalDTO[].class
@@ -48,24 +47,19 @@ public class RegionalService {
                 return;
             }
 
-            // Converter para Map para busca rápida
             Map<Integer, RegionalDTO> externos = Arrays.stream(regionaisExternos)
                 .collect(Collectors.toMap(RegionalDTO::id, r -> r));
 
-            // IDs que existem na API externa
             Set<Integer> idsExternos = externos.keySet();
 
-            // Buscar todos os regionais ativos no BD
             List<Regional> regionaisAtivos = repository.findAllByAtivoTrue();
             Map<Integer, Regional> locaisMap = regionaisAtivos.stream()
                 .collect(Collectors.toMap(Regional::getId, r -> r));
 
-            // PASSO 1: Verificar novos e alterados
             for (RegionalDTO externo : regionaisExternos) {
                 Regional local = locaisMap.get(externo.id());
 
                 if (local == null) {
-                    // NOVO: inserir
                     log.info("Novo regional encontrado: ID={}, Nome={}", externo.id(), externo.nome());
                     Regional novoRegional = new Regional();
                     novoRegional.setId(externo.id());
@@ -74,7 +68,6 @@ public class RegionalService {
                     repository.save(novoRegional);
                     
                 } else if (!local.getNome().equals(externo.nome())) {
-                    // ALTERADO: inativar anterior e criar novo
                     log.info("Regional alterado: ID={}, Nome anterior: {}, Nome novo: {}", 
                         externo.id(), local.getNome(), externo.nome());
                     
@@ -89,7 +82,6 @@ public class RegionalService {
                 }
             }
 
-            // PASSO 2: Inativar regionais que não estão mais no endpoint
             regionaisAtivos.stream()
                 .filter(r -> !idsExternos.contains(r.getId()))
                 .forEach(r -> {
@@ -106,34 +98,26 @@ public class RegionalService {
         }
     }
 
-    /**
-     * Busca todos os regionais ativos
-     */
+
     public List<RegionalDTO> findAllAtivos() {
         return repository.findAllAtivos().stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
     }
 
-    /**
-     * Busca um regional específico por ID
-     */
+
     public Optional<Regional> findById(Integer id) {
         return repository.findById(id);
     }
 
-    /**
-     * Busca um regional ativo por ID
-     */
+
     public Optional<RegionalDTO> findByIdAndAtivo(Integer id) {
         return repository.findById(id)
             .filter(Regional::getAtivo)
             .map(this::toDTO);
     }
 
-    /**
-     * Converte Regional para RegionalDTO
-     */
+
     private RegionalDTO toDTO(Regional regional) {
         return new RegionalDTO(
             regional.getId(),

@@ -50,7 +50,7 @@ public class FileStorageService {
                     .method(Method.GET)
                     .bucket(bucketName)
                     .object(fileKey)
-                    .expiry(1, TimeUnit.HOURS) // URL válida por 1 hora
+                    .expiry(1, TimeUnit.HOURS)
                     .build()
             );
         } catch (Exception e) {

@@ -8,17 +8,13 @@ export function NotificationCenter() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
-    // Conectar ao WebSocket
     webSocketService.connect();
 
-    // Subscrever a notificações
     const notificationSub = webSocketService.notification$.subscribe((notification) => {
       setNotifications((prev) => [notification, ...prev]);
-      // Mostrar toast
       showNotificationToast(notification);
     });
 
-    // Subscrever ao status de conexão
     const connectionSub = webSocketService.connection$.subscribe((connected) => {
       setIsConnected(connected);
     });
@@ -31,17 +27,12 @@ export function NotificationCenter() {
   }, []);
 
   function showNotificationToast(notification: Notification) {
-    // Usar toast para exibir notificação
     let message = '';
     if ('title' in notification) {
-      // AlbumNotification
       message = `Novo álbum: "${notification.title}" de ${notification.artistName}`;
     } else {
-      // ArtistNotification
       message = `Novo artista: "${notification.name}"${notification.year ? ` (${notification.year})` : ''}`;
     }
-    // Você pode integrar com 'sonner' ou outro toast aqui
-    console.log('Notificação:', message);
   }
 
   function dismissNotification(index: number) {

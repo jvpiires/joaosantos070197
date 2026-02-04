@@ -24,7 +24,10 @@
   grid-column: span 2;
   box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
-
+span{
+    align-content: center;
+    padding: 2px;
+}
 /* Album Header - Clickable */
 .album-header {
   padding: 1rem;

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public Page<AlbumDTO> findAll(Long artistId, String title, Pageable pageable) {
         Page<Album> page;
-        
+
         if (artistId != null) {
             page = repository.findByArtistsId(artistId, pageable);
         } else if (title != null && !title.isBlank()) {
@@ -50,7 +51,7 @@ public class AlbumService {
         } else {
             page = repository.findAll(pageable);
         }
-        
+
         return page.map(this::toDTO);
     }
 
@@ -62,42 +63,59 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDTO create(AlbumDTO dto) {
+    public AlbumDTO create(AlbumDTO dto, MultipartFile imageFile, Long[] artistIds) {
         Album album = new Album();
         album.setTitle(dto.title());
-        
-        // Se artistIds for fornecido, use para adicionar múltiplos artistas
-        if (dto.artistIds() != null && !dto.artistIds().isEmpty()) {
+
+        // Vincula artistas
+        if (artistIds != null && artistIds.length > 0) {
+            List<Artist> artists = artistRepository.findAllById(Arrays.asList(artistIds));
+            if (artists.isEmpty()) {
+                throw new EntityNotFoundException("Nenhum artista encontrado com os IDs fornecidos");
+            }
+            album.setArtists(artists);
+        } else if (dto.artistIds() != null && !dto.artistIds().isEmpty()) {
             List<Artist> artists = artistRepository.findAllById(dto.artistIds());
             if (artists.isEmpty()) {
                 throw new EntityNotFoundException("Nenhum artista encontrado com os IDs fornecidos");
             }
             album.setArtists(artists);
         } else if (dto.artists() != null && !dto.artists().isEmpty()) {
-            // Se artists for fornecido via DTO
             List<Long> ids = dto.artists().stream()
                     .map(ArtistDTO::id)
                     .collect(Collectors.toList());
             List<Artist> artists = artistRepository.findAllById(ids);
             album.setArtists(artists);
         }
-        
+
         Album savedAlbum = repository.save(album);
-        
-        // Enviar notificação WebSocket
+
+        // Upload da imagem se fornecida
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String fileKey = fileStorageService.uploadFile(imageFile);
+            AlbumImage image = new AlbumImage();
+            image.setAlbum(savedAlbum);
+            image.setFileKey(fileKey);
+            image.setFileName(imageFile.getOriginalFilename());
+            image.setContentType(imageFile.getContentType());
+            albumImageRepository.save(image);
+            savedAlbum.getImages().add(image);
+        }
+
+        // Notificação WebSocket
         if (!savedAlbum.getArtists().isEmpty()) {
             String artistNames = savedAlbum.getArtists().stream()
                     .map(Artist::getName)
                     .collect(Collectors.joining(", "));
             AlbumNotificationDTO notification = new AlbumNotificationDTO(
-                savedAlbum.getId(),
-                savedAlbum.getTitle(),
-                artistNames,
-                savedAlbum.getCreatedAt()
+                    savedAlbum.getId(),
+                    savedAlbum.getTitle(),
+                    artistNames,
+                    savedAlbum.getCreatedAt()
             );
             webSocketService.notifyNewAlbum(notification);
         }
-        
+
         return toDTO(savedAlbum);
     }
 
@@ -105,10 +123,9 @@ public class AlbumService {
     public AlbumDTO update(Long id, AlbumDTO dto) {
         Album album = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Álbum não encontrado"));
-        
+
         album.setTitle(dto.title());
-        
-        // Atualiza artistas se fornecido
+
         if (dto.artistIds() != null && !dto.artistIds().isEmpty()) {
             List<Artist> artists = artistRepository.findAllById(dto.artistIds());
             album.setArtists(artists);
@@ -129,43 +146,43 @@ public class AlbumService {
     public AlbumDTO uploadImage(Long id, MultipartFile file) {
         Album album = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Álbum não encontrado"));
-        
+
         String fileKey = fileStorageService.uploadFile(file);
-        
+
         AlbumImage image = new AlbumImage();
         image.setAlbum(album);
         image.setFileKey(fileKey);
         image.setFileName(file.getOriginalFilename());
         image.setContentType(file.getContentType());
-        
+
         albumImageRepository.save(image);
         album.getImages().add(image);
-        
+
         return toDTO(album);
     }
 
     private AlbumDTO toDTO(Album album) {
         List<AlbumImageDTO> images = album.getImages().stream()
                 .map(img -> new AlbumImageDTO(
-                        img.getId(), 
-                        fileStorageService.getPresignedUrl(img.getFileKey()), 
+                        img.getId(),
+                        fileStorageService.getPresignedUrl(img.getFileKey()),
                         img.getFileName()
                 ))
                 .collect(Collectors.toList());
 
         List<ArtistDTO> artistDtos = album.getArtists().stream()
                 .map(artist -> new ArtistDTO(
-                    artist.getId(), 
-                    artist.getName(), 
-                    artist.getImageUrl(), 
-                    artist.getYear(), 
-                    null // Não incluir álbuns aqui para evitar recursão circular
+                    artist.getId(),
+                    artist.getName(),
+                    artist.getImageUrl(),
+                    artist.getYear(),
+                    null
                 ))
                 .collect(Collectors.toList());
 
         return new AlbumDTO(
-            album.getId(), 
-            album.getTitle(), 
+            album.getId(),
+            album.getTitle(),
             artistDtos,
             null,
             images,

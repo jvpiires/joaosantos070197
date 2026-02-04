@@ -34,10 +34,7 @@ class WebSocketService {
       reconnectDelay: 5000,
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
-        this.connectionSubject.next(true);
-        console.log('✅ WebSocket conectado!');
-        
-        // Inscrever em notificações de artistas
+        this.connectionSubject.next(true);        
         this.client?.subscribe('/topic/artists', (message: IMessage) => {
           try {
             const notification = JSON.parse(message.body) as ArtistNotification;
@@ -47,7 +44,6 @@ class WebSocketService {
           }
         });
         
-        // Inscrever em notificações de álbuns
         this.client?.subscribe('/topic/albums', (message: IMessage) => {
           try {
             const notification = JSON.parse(message.body) as AlbumNotification;
@@ -57,12 +53,10 @@ class WebSocketService {
           }
         });
         
-        // NOVO: Inscrever em notificações de refresh token
         this.client?.subscribe('/topic/auth-refresh', (message: IMessage) => {
           try {
             const data = JSON.parse(message.body);
             console.log('🔐 Refresh token recebido via WebSocket:', data);
-            // Você pode mostrar um toast aqui se quiser
           } catch (error) {
             console.error('Erro ao parsear notificação de refresh:', error);
           }

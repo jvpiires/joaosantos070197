@@ -24,17 +24,14 @@ export const artistService = {
   }): Promise<Artist> => {
     const formData = new FormData();
     
-    // Criar objeto JSON com os dados do artista
     const artistData = {
       name: data.name,
       year: data.year || null,
       albumIds: data.albumIds || []
     };
     
-    // Adicionar JSON como string
     formData.append('data', JSON.stringify(artistData));
     
-    // Adicionar imagem se fornecida
     if (data.image) {
       formData.append('image', data.image);
     }

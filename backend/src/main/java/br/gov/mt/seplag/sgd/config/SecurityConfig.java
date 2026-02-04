@@ -41,7 +41,7 @@ public class SecurityConfig {
                         // 1. Rotas de Autenticação (Públicas)
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
 
                         // 2. WebSocket e Documentação
                         .requestMatchers("/ws/**", "/ws/sgd/**").permitAll()

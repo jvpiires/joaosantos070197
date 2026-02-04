@@ -3,7 +3,6 @@ import type { LoginCredentials, LoginResponse, RegisterData } from '../types/aut
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
 
-// Cliente axios sem interceptadores para refresh token
 const authClient = axios.create({
   baseURL: API_URL,
 });
@@ -23,7 +22,6 @@ export const authService = {
 
   refreshToken: async (currentToken: string): Promise<LoginResponse> => {
     try {
-      console.log('🔄 Tentando renovar token...');
       
       const response = await authClient.post<LoginResponse>(
         '/auth/refresh',
@@ -36,7 +34,6 @@ export const authService = {
         }
       );
       
-      console.log('✅ Token renovado:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('❌ Erro ao renovar token:', error.response?.status, error.response?.data);

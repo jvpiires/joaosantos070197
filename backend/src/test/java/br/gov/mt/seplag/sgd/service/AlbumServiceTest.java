@@ -66,7 +66,7 @@ class AlbumServiceTest {
         when(artistRepository.findAllById(List.of(1L))).thenReturn(List.of(testArtist));
         when(albumRepository.save(any(Album.class))).thenReturn(testAlbum);
 
-        AlbumDTO result = albumService.create(dto);
+        AlbumDTO result = albumService.create(dto, null, new Long[]{1L});
 
         assertNotNull(result);
         assertEquals("Test Album", result.title());

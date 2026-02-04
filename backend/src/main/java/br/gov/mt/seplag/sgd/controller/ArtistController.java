@@ -39,7 +39,6 @@ public class ArtistController {
             @RequestParam(required = false) String name,
             @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        // O parâmetro 'sort' na URL (?sort=name,desc) vai controlar a ordenação (requisito f)
         Page<ArtistDTO> page = service.findAll(name, pageable);
         return ResponseEntity.ok(page);
     }
@@ -57,7 +56,6 @@ public class ArtistController {
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         try {
-            // Deserializar JSON para CreateArtistRequest
             CreateArtistRequest request = objectMapper.readValue(dataJson, CreateArtistRequest.class);
             
             ArtistDTO created = service.create(request, image);

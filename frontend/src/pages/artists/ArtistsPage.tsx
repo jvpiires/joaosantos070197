@@ -11,6 +11,7 @@ import { artistService } from '../../services/artistService';
 import type { Artist } from '../../types/models';
 import { toast } from 'sonner';
 import './ArtistsPage.css';
+import { useNavigate } from 'react-router-dom';
 
 interface PageResponse {
   content: Artist[];
@@ -32,11 +33,22 @@ export const ArtistsPage = () => {
   const [rows, setRows] = useState(10);
   const [expandedRows, setExpandedRows] = useState<Artist[]>([]);
 
-  // Carrega artistas
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAdmin || userRole !== 'ADMIN') {
+      navigate('/');
+    }
+  }, [isAdmin, userRole, navigate]);
+
+  if (!isAdmin || userRole !== 'ADMIN') {
+    return null;
+  }
+
   const loadArtists = async () => {
     setLoading(true);
     try {
-      const currentPage = Math.floor(first / rows); // Calcula página atual corretamente
+      const currentPage = Math.floor(first / rows);
       
       const response = await artistService.getAll({
         name: searchTerm || undefined,
@@ -48,7 +60,6 @@ export const ArtistsPage = () => {
       setArtists(response.content);
       setTotalRecords(response.totalElements);
       
-      console.log('Página atual:', currentPage, 'Total de páginas:', response.totalPages); // DEBUG
     } catch (error) {
       console.error('Erro ao carregar artistas:', error);
       toast.error('Erro ao carregar artistas');
@@ -58,7 +69,7 @@ export const ArtistsPage = () => {
   };
 
   useEffect(() => {
-    setFirst(0); // Reset para primeira página quando buscar
+    setFirst(0);
     loadArtists();
   }, [searchTerm]);
 
@@ -66,7 +77,6 @@ export const ArtistsPage = () => {
     loadArtists();
   }, [first, rows]);
 
-  // Handler de deletar artista
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Tem certeza que deseja excluir o artista "${name}"?`)) {
       return;
@@ -82,18 +92,17 @@ export const ArtistsPage = () => {
     }
   };
 
-  // Template para ações (botões de editar/deletar)
   const actionsBodyTemplate = (rowData: Artist) => {
     if (!isAdmin) return null;
 
     return (
       <div className="flex gap-2">
-        <Button
+        {/*<Button
           icon="pi pi-pencil"
           className="p-button-text p-button-sm"
           onClick={() => toast.info('Funcionalidade em desenvolvimento')}
           tooltip="Editar"
-        />
+        /> */}
         <Button
           icon="pi pi-trash"
           className="p-button-text p-button-danger p-button-sm"
@@ -104,7 +113,6 @@ export const ArtistsPage = () => {
     );
   };
 
-  // Template para imagem do artista (32x32 fixo)
   const imageBodyTemplate = (rowData: Artist) => {
     if (!rowData.imageUrl) {
       return (
@@ -123,7 +131,6 @@ export const ArtistsPage = () => {
   };
 
 
-  // Template para nome com foto
   const nameBodyTemplate = (rowData: Artist) => {
     return (
       <div className="flex items-center gap-3">
@@ -133,7 +140,6 @@ export const ArtistsPage = () => {
     );
   };
 
-  // Template para ano
   const yearBodyTemplate = (rowData: Artist) => {
     return rowData.year ? (
       <span className="font-mono font-bold text-sm">{rowData.year}</span>
@@ -142,7 +148,6 @@ export const ArtistsPage = () => {
     );
   };
 
-  // Template para álbuns
   const albumsBodyTemplate = (rowData: Artist) => {
     if (!rowData.albums || rowData.albums.length === 0) {
       return <span className="text-gray-400 text-xs">Nenhum</span>;
@@ -154,7 +159,6 @@ export const ArtistsPage = () => {
     );
   };
 
-  // Skeleton para carregamento
   const skeletonBodyTemplate = () => (
     <div className="flex items-center gap-3">
       <Skeleton className="w-8 h-8 flex-shrink-0" />
@@ -162,7 +166,6 @@ export const ArtistsPage = () => {
     </div>
   );
 
-  // Template para expandir e ver álbuns em grid (4x4)
   const rowExpand = (rowData: Artist) => {
     return (
       <div className="bg-white p-8 border-t-4 border-black">
@@ -175,14 +178,11 @@ export const ArtistsPage = () => {
             <div className="grid grid-cols-4 gap-4">
               {rowData.albums.map((album) => (
                 <div key={album.id} className="group">
-                  {/* Card em grid */}
                   <div className="border-2 border-black bg-gradient-to-b from-white to-gray-50 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 h-full flex flex-col">
-                    {/* Capa do álbum - quadrado perfeito */}
                     <div className="w-full aspect-square bg-gradient-to-br from-gray-900 to-black flex items-center justify-center border-b-2 border-black">
                       <i className="pi pi-compact-disc text-gray-600 text-4xl"></i>
                     </div>
                     
-                    {/* Informações */}
                     <div className="p-3 flex-1 flex flex-col">
                       <h4 className="font-bold text-xs uppercase line-clamp-3 text-black leading-tight">
                         {album.title}
@@ -208,21 +208,27 @@ export const ArtistsPage = () => {
   return (
     <Layout>
       <div className="space-y-4">
-        
-        {/* Header com Novo Artista */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-black uppercase">Artistas</h1>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-4xl font-black uppercase tracking-tighter">
+              Artistas
+            </h1>
+            <p className="text-gray-600 mt-2 font-mono">Descubra nossos artistas</p>
+          </div>
+        </div>
+        <div className="flex justify-between items-center p-4">
+          <h1 className="text-2xl font-black uppercase"></h1>
           {isAdmin && (
             <Button
               label="Novo Artista"
               icon="pi pi-plus"
+              severity='contrast'
               onClick={() => setShowCreateModal(true)}
               className="border-none bg-black text-white px-6 py-3 font-black uppercase tracking-[0.2em] hover:!bg-cyan-400 hover:!text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
             />
           )}
         </div>
 
-        {/* Global Search */}
         <div className="flex gap-2 items-center bg-white p-4 border-2 border-black">
           <i className="pi pi-search text-gray-600"></i>
           <InputText
@@ -233,7 +239,6 @@ export const ArtistsPage = () => {
           />
         </div>
 
-        {/* Tabela com paginação */}
         <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <DataTable
             value={loading ? Array(rows).fill({}) : artists}
@@ -243,7 +248,6 @@ export const ArtistsPage = () => {
             rows={rows}
             totalRecords={totalRecords}
             onPage={(e: DataTableStateEvent) => {
-              console.log('Evento onPage:', e); // DEBUG
               setFirst(e.first || 0);
               setRows(e.rows || 10);
             }}
@@ -295,7 +299,6 @@ export const ArtistsPage = () => {
         </div>
       </div>
 
-      {/* Modal de Criação */}
       <CreateArtistModal
         visible={showCreateModal}
         onHide={() => setShowCreateModal(false)}

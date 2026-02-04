@@ -20,16 +20,16 @@ public class Sync {
     private String idExternal;
 
     @Column(name = "entity_type", nullable = false)
-    private String entityType; // ex: ARTIST, ALBUM, etc
+    private String entityType;
 
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
 
     @Column(name = "external_data", columnDefinition = "TEXT")
-    private String externalData; // JSON com dados do sistema externo
+    private String externalData;
 
     @Column(name = "status", nullable = false)
-    private String status; // PENDING, SYNCED, ERROR, etc
+    private String status;
 
     @Column(name = "last_sync_at")
     private LocalDateTime lastSyncAt;

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { Toast } from 'primereact/toast';
+import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '../../types/zod.types';
@@ -26,7 +26,6 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
   const { login } = useAuth();
-  const toast = useRef<Toast | null>(null);
   
   const loginForm = useForm<LoginInput>({
     resolver: zodResolver(loginSchema)
@@ -39,7 +38,14 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
   });
 
   const showToast = (severity: "success" | "info" | "warn" | "error", summary: string, detail: string) => {
-    toast.current?.show({ severity, summary, detail, life: 5000 });
+    const toastFn = severity === "error" ? toast.error : 
+                    severity === "success" ? toast.success : 
+                    severity === "warn" ? toast.warning : toast.info;
+    
+    toastFn(summary, {
+      description: detail,
+      duration: 5000
+    });
   };
 
   const parseJwt = (token: string) => {
@@ -107,7 +113,6 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
       className="font-mono border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
       contentClassName="p-6 md:p-10 bg-white"
     >
-      <Toast ref={toast} className="auth-toast" appendTo={document.body} baseZIndex={10000} />
       <div className="flex flex-col space-y-6 w-full max-w-[320px] md:min-w-[400px]">
         
         <div className="text-center space-y-3">

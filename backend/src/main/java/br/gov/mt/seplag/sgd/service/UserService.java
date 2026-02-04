@@ -21,9 +21,6 @@ public class UserService {
     @Autowired
     private UserRepository repository;
 
-    /**
-     * Listar todos os usuários
-     */
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
         return repository.findAll().stream()
@@ -31,9 +28,6 @@ public class UserService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * Buscar usuário por ID
-     */
     @Transactional(readOnly = true)
     public UserDTO findById(Long id) {
         User user = repository.findById(id)
@@ -41,20 +35,14 @@ public class UserService {
         return toDTO(user);
     }
 
-    /**
-     * Alterar role de um usuário (apenas ADMIN)
-     * Permite alterar qualquer usuário, exceto remover o último admin
-     */
     @Transactional
     public UserDTO changeRole(Long id, ChangeRoleDTO dto) {
         User user = repository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + id));
 
-        // Validar role
         try {
             UserRole newRole = UserRole.valueOf(dto.role().toUpperCase());
             
-            // Validação: Não permitir remover o último admin do sistema
             if (user.getRole() == UserRole.ADMIN && newRole == UserRole.USER) {
                 long adminCount = repository.findAll().stream()
                     .filter(u -> u.getRole() == UserRole.ADMIN)

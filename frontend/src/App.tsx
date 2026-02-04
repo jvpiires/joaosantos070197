@@ -3,10 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from './pages/home/HomePage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { RegionaisPage } from './pages/admin/RegionaisPage';
-import { AdminAlbumsPage } from './pages/admin/AdminAlbumsPage';
 import { ArtistsPage } from './pages/artists/ArtistsPage';
-import { AlbumsPage } from './pages/AlbumsPage';
-import { FavoritesPage } from './pages/FavoritesPage';
+import { AlbumsPage } from './pages/albums/AlbumsPage';
+import { FavoritesPage } from './pages/favorites/FavoritesPage';
 import { Toaster } from 'sonner';
 function AppContent() {
 
@@ -21,7 +20,6 @@ function AppContent() {
       <Route path="/favorites" element={<FavoritesPage />} />
       <Route path="/z_admin/users" element={<UsersPage />} />
       <Route path="/z_admin/regionais" element={<RegionaisPage />} />
-      <Route path="/z_admin/albums" element={<AdminAlbumsPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

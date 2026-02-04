@@ -9,7 +9,6 @@ export const RegionaisPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Protege rota - só admin pode acessar
     if (!isAuthenticated || userRole !== 'ADMIN') {
       navigate('/');
     }

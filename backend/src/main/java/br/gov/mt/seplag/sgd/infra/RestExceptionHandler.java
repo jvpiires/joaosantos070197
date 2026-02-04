@@ -34,9 +34,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     private ResponseEntity<RestErrorMessage> handleGeneral(Exception ex) {
-        // ADICIONE ESTA LINHA PARA VER O ERRO NO CONSOLE:
         ex.printStackTrace(); 
-        
         RestErrorMessage threatResponse = new RestErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno no servidor.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(threatResponse);
     }

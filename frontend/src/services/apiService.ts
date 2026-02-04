@@ -3,14 +3,12 @@ import apiClient from './apiClient';
 import type { User, Regional, AlbumNotification } from '../types/api.types';
 
 class ApiService {
-  // BehaviorSubjects para gerenciar estado
   private usersSubject = new BehaviorSubject<User[]>([]);
   private regionaisSubject = new BehaviorSubject<Regional[]>([]);
   private notificationsSubject = new BehaviorSubject<AlbumNotification[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
 
-  // Observables públicos
   public users$ = this.usersSubject.asObservable();
   public regionais$ = this.regionaisSubject.asObservable();
   public notifications$ = this.notificationsSubject.asObservable();

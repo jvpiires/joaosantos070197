@@ -10,7 +10,6 @@ public class MinIOHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         try {
-            // Aqui você pode adicionar verificações de conexão com MinIO
             return Health.up()
                     .withDetail("storage", "MinIO is available")
                     .build();

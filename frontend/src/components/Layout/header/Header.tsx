@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
+import { toast } from 'sonner';
 import { AuthModal } from '../../Modal/AuthModal';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext'; // <--- O SEGREDO ESTÁ AQUI
@@ -10,35 +10,26 @@ import { NotificationCenter } from '../../NotificationCenter/NotificationCenter'
 export const Header = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const toast = useRef<Toast | null>(null);
 
-  // Em vez de criar states locais, usamos o estado global do contexto
   const { isAuthenticated, userLogin, logout } = useAuth();
 
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Chama o logout do contexto (que limpa storage E estado global)
     logout();
 
     setShowLogoutConfirm(false);
 
-    toast.current?.show({
-      severity: "info",
-      summary: "Logout",
-      detail: "Você saiu da conta.",
-      life: 3500
+    toast.info('Logout', {
+      description: 'Você saiu da conta.',
+      duration: 3500
     });
 
-    // O redirecionamento é opcional se a HomePage já tratar o estado "false",
-    // mas garante que o usuário vá para o topo.
-    // NÃO USE navigate('/') se estiver causando loop.
     navigate('/');
   };
 
   return (
     <header style={{ backdropFilter: "blur(16px)" }} className="bg-transparent border-gray-100 sticky top-0 z-50 mt-7 font-mono">
-      <Toast ref={toast} className="auth-toast" appendTo={document.body} baseZIndex={10000} />
       <div className="max-w-screen-2xl mx-auto px-6 h-auto md:h-16 flex flex-col md:flex-row items-center justify-between relative py-4 md:py-0">
         <div className="hidden md:block flex-1"></div>
         <div className="md:absolute md:left-1/2 md:transform md:-translate-x-1/2 flex items-center space-x-3 mb-6 md:mb-0">
@@ -50,10 +41,8 @@ export const Header = () => {
           </span>
         </div>
         <div className="flex-1 flex justify-content-end md:justify-end w-full md:w-auto items-center space-x-4">
-          {/* NotificationCenter (só se logado) */}
           {isAuthenticated && <NotificationCenter />}
 
-          {/* Usa isAuthenticated do Contexto */}
           {isAuthenticated ? (
             <div className="flex items-center space-x-3">
               <span className="font-bold text-black uppercase mr-4">
@@ -63,6 +52,7 @@ export const Header = () => {
                 label="Logout"
                 icon="pi pi-sign-out"
                 severity="danger"
+                raised
                 className="px-2 py-2 text-sm font-bold rounded-md transition-all !bg-red-500 !text-white hover:!bg-red-700 hover:scale-105"
                 onClick={() => setShowLogoutConfirm(true)}
               />
@@ -77,10 +67,11 @@ export const Header = () => {
                   <span className="text-lg font-bold">Deseja realizar o logout?</span>
                   <div className="flex space-x-4 w-full justify-around">
                     <Button label="Cancelar"
+                      severity="contrast"
                       onClick={() => setShowLogoutConfirm(false)}
                       className="text-sm p-2 border-none py-2 mt-2 font-black uppercase tracking-[0.2em] hover:!bg-cyan-400 hover:!text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
                     />
-                    <Button label="Sair" severity="danger"
+                    <Button label="Sair" severity='danger'
                       onClick={handleLogout}
                       className="text-sm p-2 border-none py-2 mt-2 font-black uppercase tracking-[0.2em] hover:!bg-cyan-400 hover:!text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
                     />

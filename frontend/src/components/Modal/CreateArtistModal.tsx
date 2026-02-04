@@ -33,7 +33,6 @@ export const CreateArtistModal = ({ visible, onHide, onSuccess }: CreateArtistMo
     resolver: zodResolver(artistSchema), 
   });
 
-  // Carregar álbuns disponíveis
   useEffect(() => {
     if (visible) {
       loadAlbums();
@@ -121,16 +120,18 @@ export const CreateArtistModal = ({ visible, onHide, onSuccess }: CreateArtistMo
     <Dialog 
       visible={visible} 
       onHide={handleClose}
+      position="center"
       draggable={false}
       resizable={false}
       showHeader={false}
-      className="font-mono border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w- max-w-md"
-      contentClassName="p-8 bg-white"
+      modal
+      className="font-mono border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+      contentClassName="p-6 bg-white max-h-[85vh] overflow-y-auto"
+      style={{ width: '90vw', maxWidth: '500px' }}
     >
-      <div className="flex flex-col space-y-6">
+      <div className="flex flex-col space-y-4 p-1">
         
-        {/* Cabeçalho */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-3 m-4b-6">
           <div className="w-14 h-14 bg-black mx-auto flex items-center justify-center rounded-xl">
             <i className="pi pi-microphone text-white text-3xl"></i>
           </div>
@@ -142,18 +143,15 @@ export const CreateArtistModal = ({ visible, onHide, onSuccess }: CreateArtistMo
           </p>
         </div>
 
-        {/* Formulário */}
         <form 
           onSubmit={handleSubmit(onSubmit)} 
           className="flex flex-col space-y-5"
         >
-          {/* Upload de Imagem */}
           <ImageUploadZone 
             onImageSelect={handleImageSelect}
             error={getErrorMessage(errors.image)}
           />
 
-          {/* Campo Nome */}
           <div className="flex flex-col space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
               Nome do Artista *
@@ -175,7 +173,6 @@ export const CreateArtistModal = ({ visible, onHide, onSuccess }: CreateArtistMo
             )}
           </div>
 
-          {/* Campo Ano */}
           <div className="flex flex-col space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
               Ano de Início/Formação (Opcional)
@@ -210,7 +207,6 @@ export const CreateArtistModal = ({ visible, onHide, onSuccess }: CreateArtistMo
             )}
           </div>
 
-          {/* Campo Álbuns */}
           <div className="flex flex-col space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
               Álbuns (Opcional)
@@ -239,7 +235,6 @@ export const CreateArtistModal = ({ visible, onHide, onSuccess }: CreateArtistMo
             </p>
           </div>
 
-          {/* Botões */}
           <div className="flex gap-3 mt-6">
             <Button 
               type="button"

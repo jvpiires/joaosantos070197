@@ -17,12 +17,10 @@ export const ImageUploadZone = ({ onImageSelect, error }: ImageUploadZoneProps) 
       return;
     }
 
-    // Validação básica de tipo
     if (!file.type.startsWith('image/')) {
       return;
     }
 
-    // Criar preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreview(reader.result as string);
@@ -97,7 +95,7 @@ export const ImageUploadZone = ({ onImageSelect, error }: ImageUploadZoneProps) 
             <img
               src={preview}
               alt="Preview"
-              className="w-full h-48 object-cover border-2 border-black"
+              className="w-full h-40 object-cover border-2 border-black"
             />
             <button
               type="button"

@@ -10,7 +10,6 @@ interface AuthContextType {
   refreshToken: () => Promise<void>;
 }
 
-// Decodifica JWT sem verificar (apenas para ler exp)
 const decodeToken = (token: string): { exp: number } | null => {
   try {
     const base64Url = token.split('.')[1];
@@ -68,26 +67,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const currentToken = localStorage.getItem("token");
       
       if (!currentToken) {
-        console.log("❌ Nenhum token para renovar");
         logout();
         return;
       }
 
-      console.log("🔄 Renovando token via AuthContext...");
       const response = await authService.refreshToken(currentToken);
       const newToken = response.token;
 
-      // Atualiza o token no localStorage
       localStorage.setItem("token", newToken);
       
-      console.log("✅ Token renovado com sucesso via AuthContext");
     } catch (error) {
-      console.error("❌ Erro ao renovar token via AuthContext:", error);
       logout();
     }
   };
 
-  // Verifica periodicamente se o token precisa ser renovado
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -100,24 +93,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (!decoded || !decoded.exp) return;
 
-      // Calcula quantos minutos faltam para expirar
       const now = Math.floor(Date.now() / 1000);
       const timeUntilExpiry = decoded.exp - now;
-      const minutesUntilExpiry = Math.floor(timeUntilExpiry / 60);
 
-      console.log(`⏰ Token expira em ${minutesUntilExpiry} minutos`);
-
-      // Se faltar menos de 5 minutos para expirar, renova
-      if (timeUntilExpiry < 300) { // 5 minutos
-        console.log("⚠️ Token próximo de expirar! Renovando...");
+      if (timeUntilExpiry < 300) {
         refreshToken();
       }
     };
 
-    // Verifica imediatamente
     checkTokenExpiration();
 
-    // Verifica a cada 2 minutos
     const interval = setInterval(checkTokenExpiration, 2 * 60 * 1000);
 
     return () => clearInterval(interval);

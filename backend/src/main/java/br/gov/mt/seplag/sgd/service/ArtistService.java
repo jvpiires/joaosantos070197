@@ -59,17 +59,14 @@ public class ArtistService {
         artist.setName(request.name());
         artist.setYear(request.year());
         
-        // Upload da imagem se fornecida
         if (image != null && !image.isEmpty()) {
             String imageKey = fileStorageService.uploadFile(image);
             artist.setImageUrl(imageKey);
         }
         
-        // Associar álbuns se fornecidos
         if (request.albumIds() != null && !request.albumIds().isEmpty()) {
             List<Album> albums = albumRepository.findAllById(request.albumIds());
             artist.setAlbums(albums);
-            // Atualizar o relacionamento bidirecional
             for (Album album : albums) {
                 if (!album.getArtists().contains(artist)) {
                     album.getArtists().add(artist);
@@ -79,7 +76,6 @@ public class ArtistService {
         
         Artist savedArtist = repository.save(artist);
         
-        // Enviar notificação WebSocket
         ArtistNotificationDTO notification = new ArtistNotificationDTO(
             savedArtist.getId(),
             savedArtist.getName(),
@@ -121,7 +117,6 @@ public class ArtistService {
                 .collect(Collectors.toList())
             : new ArrayList<>();
             
-        // Gerar URL pré-assinada se houver imagem
         String imageUrl = artist.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             imageUrl = fileStorageService.getPresignedUrl(imageUrl);

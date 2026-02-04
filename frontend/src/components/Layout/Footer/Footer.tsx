@@ -1,4 +1,3 @@
-// Footer.tsx
 export const Footer = () => {
   return (
     <footer className="bg-slate-800 text-black py-6">

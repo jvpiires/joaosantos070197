@@ -45,10 +45,23 @@ public class AlbumController {
         return ResponseEntity.ok(service.findById(id));
     }
 
-    @PostMapping
-    @Operation(summary = "Criar álbum", description = "Cadastra um novo álbum vinculado a um artista")
-    public ResponseEntity<AlbumDTO> create(@RequestBody @Valid AlbumDTO dto) {
-        AlbumDTO created = service.create(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Criar álbum", description = "Cadastra um novo álbum com artistas e imagem")
+    public ResponseEntity<AlbumDTO> create(
+            @RequestParam String title,
+            @RequestParam(required = false) MultipartFile image,
+            @RequestParam(required = false) Long[] artistIds
+    ) {
+        AlbumDTO dto = new AlbumDTO(
+            null, 
+            title, 
+            null, 
+            artistIds != null ? java.util.Arrays.asList(artistIds) : null,
+            null,
+            null
+        );
+        
+        AlbumDTO created = service.create(dto, image, artistIds);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(created.id()).toUri();
         return ResponseEntity.created(uri).body(created);

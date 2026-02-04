@@ -17,7 +17,6 @@ class RateLimitStoreTest {
     void testAllowRequest_WithinLimit() {
         String userId = "user1";
         
-        // Fazer 10 requisições (limite)
         for (int i = 0; i < 10; i++) {
             assertTrue(rateLimitStore.allowRequest(userId));
         }
@@ -27,12 +26,10 @@ class RateLimitStoreTest {
     void testAllowRequest_ExceedsLimit() {
         String userId = "user2";
         
-        // Fazer 10 requisições (limite)
         for (int i = 0; i < 10; i++) {
             assertTrue(rateLimitStore.allowRequest(userId));
         }
         
-        // 11ª requisição deve ser rejeitada
         assertFalse(rateLimitStore.allowRequest(userId));
     }
 
@@ -41,12 +38,10 @@ class RateLimitStoreTest {
         String user1 = "user1";
         String user2 = "user2";
         
-        // User 1 faz 10 requisições
         for (int i = 0; i < 10; i++) {
             assertTrue(rateLimitStore.allowRequest(user1));
         }
         
-        // User 2 ainda pode fazer requisições
         assertTrue(rateLimitStore.allowRequest(user2));
     }
 }

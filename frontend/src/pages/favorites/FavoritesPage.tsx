@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './FavoritesPage.css';
-import { useAuth } from '../contexts/AuthContext';
-import { Layout } from '../components/Layout/Layout';
+import { useAuth } from '../../contexts/AuthContext';
+import { Layout } from '../../components/Layout/Layout';
 
 interface Favorite {
   id: number;
@@ -25,8 +25,6 @@ export const FavoritesPage = () => {
   async function loadFavorites() {
     try {
       setLoading(true);
-      // Implementar chamada real quando API de favoritos estiver pronta
-      // Por enquanto, mostrar página vazia
       setFavorites([]);
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
