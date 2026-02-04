@@ -3,17 +3,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import './AlbumsPage.css';
 import { Layout } from '../../components/Layout/Layout';
 import apiClient from '../../services/apiClient';
+import { favoriteService } from '../../services/favoriteService';
 import { Paginator } from 'primereact/paginator';
 import { CreateAlbumModal } from '../../components/Modal/CreateAlbumModal';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { useAuth } from '../../contexts/AuthContext';
 import { type Album, type Pageable } from '../../types/models';
+import { toast } from 'sonner';
 
 export const AlbumsPage = () => {
-  const { userRole } = useAuth();
+  const { userRole, userId } = useAuth();
   const isAdmin = userRole === 'ADMIN';
-
+  const isUser = userRole === 'USER';  
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedAlbum, setExpandedAlbum] = useState<number | null>(null);
@@ -30,27 +32,62 @@ export const AlbumsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAdmin || userRole !== 'ADMIN') {
+    if (!isAdmin && !isUser) {
       navigate('/');
     }
-  }, [isAdmin, userRole, navigate]);
+  }, [isAdmin, isUser, navigate]);
 
-  if (!isAdmin || userRole !== 'ADMIN') {
-    return null;
+  // Carregar favoritos do usuário
+  useEffect(() => {
+    if (userId) {
+      loadFavorites();
+    }
+  }, [userId]);
+
+  async function loadFavorites() {
+    if (!userId) return;
+    
+    try {
+      const userFavorites = await favoriteService.getUserFavorites(userId);
+      setFavorites(new Set(userFavorites));
+    } catch (error) {
+      console.error('Erro ao carregar favoritos:', error);
+    }
   }
 
-  const toggleFavorite = (e: React.MouseEvent, albumId: number) => {
+  const toggleFavorite = async (e: React.MouseEvent, albumId: number) => {
     e.stopPropagation();
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(albumId)) {
-        newFavorites.delete(albumId);
+    
+    if (!userId) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
+    
+    try {
+      const isFavorited = favorites.has(albumId);
+      
+      if (isFavorited) {
+        await favoriteService.removeFavorite(userId, albumId);
+        setFavorites(prev => {
+          const newFavorites = new Set(prev);
+          newFavorites.delete(albumId);
+          return newFavorites;
+        });
+        toast.info('Álbum removido dos favoritos');
       } else {
-        newFavorites.add(albumId);
+        await favoriteService.addFavorite(userId, albumId);
+        setFavorites(prev => new Set(prev).add(albumId));
+        toast.success('Álbum adicionado aos favoritos');
       }
-      return newFavorites;
-    });
+    } catch (error) {
+      console.error('Erro ao atualizar favorito:', error);
+      toast.error('Não foi possível atualizar favorito');
+    }
   };
+
+  if (!isAdmin && !isUser) {
+    return null;
+  }
 
   useEffect(() => {
     setFirst(0);
@@ -140,11 +177,10 @@ export const AlbumsPage = () => {
                           className="absolute -top-6 -left-2 bg-white border-2 border-black p-2.5 hover:bg-pink-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
                         >
                           <i
-                            className={`pi text-base ${
-                              favorites.has(album.id)
+                            className={`pi text-base ${favorites.has(album.id)
                                 ? 'pi-heart-fill text-red-500'
                                 : 'pi-heart text-gray-600'
-                            }`}
+                              }`}
                           ></i>
                         </button>
                         <div className="w-full aspect-square border-2 border-black overflow-hidden bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
@@ -201,18 +237,18 @@ export const AlbumsPage = () => {
               </div>
 
               <div className="mt-6 border-t-2 border-black pt-4 flex justify-center">
-              <Paginator
-                first={first}
-                rows={rows}
-                totalRecords={totalRecords}
-                template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-                rowsPerPageOptions={[4, 8, 12, 16]}
-                onPageChange={(e) => {
-                  setFirst(e.first);
-                  setRows(e.rows);
-                }}
-              />
+                <Paginator
+                  first={first}
+                  rows={rows}
+                  totalRecords={totalRecords}
+                  template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                  rowsPerPageOptions={[4, 8, 12, 16]}
+                  onPageChange={(e) => {
+                    setFirst(e.first);
+                    setRows(e.rows);
+                  }}
+                />
               </div>
             </>
           )}

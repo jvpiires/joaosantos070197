@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -67,8 +67,10 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
           const claims = parseJwt(response.token);
           const roleRaw = claims.role || claims.userRole || "USER";
           const roleNormalizada = roleRaw.toString().toUpperCase();
+          const userId = claims.userId || claims.id || claims.sub;
+          const userIdNumber = userId ? parseInt(userId, 10) : undefined;
 
-          login(response.token, data.login, roleNormalizada);
+          login(response.token, data.login, roleNormalizada, userIdNumber);
           navigate('/home');
           onHide();
           showToast("success", "Login OK", "Acesso liberado.");
@@ -168,6 +170,8 @@ export const AuthModal = ({ visible, onHide }: AuthModalProps) => {
           <Button 
             label={isLogin ? "Logar" : "Registrar-se"} 
             type="submit"
+            severity="contrast"
+            raised
             className="border-none py-3 mt-5 font-black uppercase tracking-[0.2em] hover:!bg-cyan-400 hover:!text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
           />
         </form>

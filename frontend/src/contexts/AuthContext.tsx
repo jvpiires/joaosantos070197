@@ -4,13 +4,14 @@ import { authService } from "../services/authService";
 interface AuthContextType {
   isAuthenticated: boolean;
   userRole: string | null;
+  userId: number | null;
   userLogin: string | null;
-  login: (token: string, login: string, role: string) => void;
+  login: (token: string, login: string, role: string, id?: number) => void;
   logout: () => void;
   refreshToken: () => Promise<void>;
 }
 
-const decodeToken = (token: string): { exp: number } | null => {
+const decodeToken = (token: string): any => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -42,10 +43,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return localStorage.getItem("userLogin");
   });
 
-  const login = (token: string, login: string, role: string) => {
+  const [userId, setUserId] = useState<number | null>(() => {
+    const storedId = localStorage.getItem("userId");
+    return storedId ? parseInt(storedId, 10) : null;
+  });
+
+  const login = (token: string, login: string, role: string, id?: number) => {
     localStorage.setItem("token", token);
     localStorage.setItem("userLogin", login);
     localStorage.setItem("userRole", role);
+    
+    if (id) {
+      localStorage.setItem("userId", id.toString());
+      setUserId(id);
+    }
 
     setIsAuthenticated(true);
     setUserLogin(login);
@@ -56,10 +67,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("userLogin");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
 
     setIsAuthenticated(false);
     setUserLogin(null);
     setUserRole(null);
+    setUserId(null);
   };
 
   const refreshToken = async () => {
@@ -80,6 +93,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout();
     }
   };
+
+  // Extrair userId do token se não estiver no localStorage
+  useEffect(() => {
+    if (isAuthenticated && !userId) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const decoded = decodeToken(token);
+        if (decoded) {
+          const extractedUserId = decoded.userId || decoded.id || decoded.sub;
+          if (extractedUserId) {
+            const userIdNumber = parseInt(extractedUserId, 10);
+            if (!isNaN(userIdNumber)) {
+              setUserId(userIdNumber);
+              localStorage.setItem("userId", userIdNumber.toString());
+            }
+          }
+        }
+      }
+    }
+  }, [isAuthenticated, userId]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -110,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, userRole, userLogin, login, logout, refreshToken }}
+      value={{ isAuthenticated, userRole, userLogin, login, logout, refreshToken, userId }}
     >
       {children}
     </AuthContext.Provider>

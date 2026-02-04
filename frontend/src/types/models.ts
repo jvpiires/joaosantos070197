@@ -15,6 +15,12 @@ export interface Pageable<T> {
   empty: boolean;
 }
 
+export interface UserFavoriteDTO {
+  userId: number;
+  albumId: number;
+}
+
+
 export interface Artist {
   id: number;
   name: string;

@@ -33,6 +33,7 @@ export function NotificationCenter() {
     } else {
       message = `Novo artista: "${notification.name}"${notification.year ? ` (${notification.year})` : ''}`;
     }
+    console.log('🔔 Notificação recebida:', message);
   }
 
   function dismissNotification(index: number) {
