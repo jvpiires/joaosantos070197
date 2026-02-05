@@ -57,7 +57,7 @@ class ApiService {
   async loadRegionais(): Promise<void> {
     try {
       this.loadingSubject.next(true);
-      const response = await apiClient.get<Regional[]>('/api/regionais');
+      const response = await apiClient.get<Regional[]>('/api/v1/regionais');
       this.regionaisSubject.next(response.data);
       this.errorSubject.next(null);
     } catch (error: any) {

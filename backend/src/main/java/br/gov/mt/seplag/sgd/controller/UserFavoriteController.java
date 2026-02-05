@@ -22,14 +22,7 @@ public class UserFavoriteController {
     public ResponseEntity<UserFavoriteDTO> addFavorite(@PathVariable Long userId, @PathVariable Long albumId) {
         return ResponseEntity.ok(favoriteService.addFavorite(userId, albumId));
     }
-    
-    @DeleteMapping("/{userId}/{albumId}")
-    @Operation(summary = "Remover álbum dos favoritos")
-    public ResponseEntity<Void> removeFavorite(@PathVariable Long userId, @PathVariable Long albumId) {
-        favoriteService.removeFavorite(userId, albumId);
-        return ResponseEntity.noContent().build();
-    }
-    
+
     @GetMapping("/user/{userId}")
     @Operation(summary = "Listar favoritos do usuário")
     public ResponseEntity<List<UserFavoriteDTO>> getUserFavorites(@PathVariable Long userId) {

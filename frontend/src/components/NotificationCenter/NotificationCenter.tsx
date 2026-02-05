@@ -29,9 +29,23 @@ export function NotificationCenter() {
   function showNotificationToast(notification: Notification) {
     let message = '';
     if ('title' in notification) {
-      message = `Novo álbum: "${notification.title}" de ${notification.artistName}`;
+      // Álbum (novo ou atualização)
+      if ('action' in notification && notification.action) {
+        message = notification.action === 'DELETED' 
+          ? `Álbum removido: "${notification.title}"`
+          : `Álbum atualizado: "${notification.title}"`;
+      } else {
+        message = `Novo álbum: "${notification.title}"`;
+      }
     } else {
-      message = `Novo artista: "${notification.name}"${notification.year ? ` (${notification.year})` : ''}`;
+      // Artista (novo ou atualização)
+      if ('action' in notification && notification.action) {
+        message = notification.action === 'DELETED'
+          ? `Artista removido: "${notification.name}"`
+          : `Artista atualizado: "${notification.name}"`;
+      } else {
+        message = `Novo artista: "${notification.name}"${notification.year ? ` (${notification.year})` : ''}`;
+      }
     }
     console.log('🔔 Notificação recebida:', message);
   }
@@ -84,16 +98,17 @@ export function NotificationCenter() {
                     {'title' in notification ? (
                       <>
                         <div className="notification-title">
-                          Novo Álbum: {notification.title}
-                        </div>
-                        <div className="notification-artist">
-                          {notification.artistName}
+                          {'action' in notification && notification.action === 'DELETED' ? '❌ Álbum Removido' : '✏️ Álbum Atualizado'}
+                          {!('action' in notification) && '✨ Novo Álbum'}
+                          : {notification.title}
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="notification-title">
-                          Novo Artista: {notification.name}
+                          {'action' in notification && notification.action === 'DELETED' ? '❌ Artista Removido' : '✏️ Artista Atualizado'}
+                          {!('action' in notification) && '✨ Novo Artista'}
+                          : {notification.name}
                         </div>
                         {notification.year && (
                           <div className="notification-artist">
@@ -103,7 +118,10 @@ export function NotificationCenter() {
                       </>
                     )}
                     <div className="notification-time">
-                      {new Date(notification.createdAt).toLocaleString('pt-BR')}
+                      {(() => {
+                        const timestamp = 'timestamp' in notification ? notification.timestamp : notification.createdAt;
+                        return new Date(timestamp).toLocaleString('pt-BR');
+                      })()}
                     </div>
                   </div>
                   <button

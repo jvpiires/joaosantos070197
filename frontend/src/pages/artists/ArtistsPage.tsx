@@ -32,6 +32,7 @@ export const ArtistsPage = () => {
     const [first, setFirst] = useState(0);
     const [rows, setRows] = useState(10);
     const [expandedRows, setExpandedRows] = useState<Artist[]>([]);
+    const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
     const navigate = useNavigate();
 
@@ -68,10 +69,10 @@ export const ArtistsPage = () => {
         }
     };
 
-    useEffect(() => {
+    const handleSearch = () => {
         setFirst(0);
         loadArtists();
-    }, [searchTerm]);
+    };
 
     useEffect(() => {
         loadArtists();
@@ -92,17 +93,22 @@ export const ArtistsPage = () => {
         }
     };
 
+    const handleEdit = (artist: Artist) => {
+        setSelectedArtist(artist);
+        setShowCreateModal(true);
+    };
+
     const actionsBodyTemplate = (rowData: Artist) => {
         if (!isAdmin) return null;
 
         return (
             <div className="flex gap-2">
-                {/*<Button
-          icon="pi pi-pencil"
-          className="p-button-text p-button-sm"
-          onClick={() => toast.info('Funcionalidade em desenvolvimento')}
-          tooltip="Editar"
-        /> */}
+                <Button
+                    icon="pi pi-pencil"
+                    className="p-button-text p-button-sm"
+                    onClick={() => handleEdit(rowData)}
+                    tooltip="Editar"
+                />
                 <Button
                     icon="pi pi-trash"
                     className="p-button-text p-button-danger p-button-sm"
@@ -129,7 +135,6 @@ export const ArtistsPage = () => {
             />
         );
     };
-
 
     const nameBodyTemplate = (rowData: Artist) => {
         return (
@@ -234,8 +239,17 @@ export const ArtistsPage = () => {
                     <InputText
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Global Search"
                         className="flex-1 border-none bg-transparent p-0 text-base focus:outline-none focus:shadow-none placeholder-gray-400"
+                    />
+                    <Button
+                        icon="pi pi-search"
+                        onClick={handleSearch}
+                        className="border-2 border-black bg-white text-black hover:!bg-cyan-400 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none"
+                        label='Buscar'
+                        style={{color: 'black'}}
+                        severity='contrast'
                     />
                 </div>
 
@@ -301,7 +315,11 @@ export const ArtistsPage = () => {
 
             <CreateArtistModal
                 visible={showCreateModal}
-                onHide={() => setShowCreateModal(false)}
+                artist={selectedArtist}
+                onHide={() => {
+                    setShowCreateModal(false);
+                    setSelectedArtist(null);
+                }}
                 onSuccess={loadArtists}
             />
         </Layout>

@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 public class Regional {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "regionais_seq")
+    @SequenceGenerator(name = "regionais_seq", sequenceName = "regionais_id_seq", allocationSize = 1)
     private Integer id;
 
     @Column(name = "id_external", unique = true)

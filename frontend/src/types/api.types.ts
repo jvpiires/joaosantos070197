@@ -8,6 +8,7 @@ export interface Regional {
   id: number;
   nome: string;
   ativo: boolean;
+  idExternal?: string;
 }
 
 export interface AlbumNotification {

@@ -3,6 +3,7 @@ package br.gov.mt.seplag.sgd.service;
 import br.gov.mt.seplag.sgd.dto.AlbumSummaryDTO;
 import br.gov.mt.seplag.sgd.dto.ArtistDTO;
 import br.gov.mt.seplag.sgd.dto.ArtistNotificationDTO;
+import br.gov.mt.seplag.sgd.dto.ArtistUpdateNotificationDTO;
 import br.gov.mt.seplag.sgd.dto.CreateArtistRequest;
 import br.gov.mt.seplag.sgd.entity.Album;
 import br.gov.mt.seplag.sgd.entity.Artist;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -88,26 +90,69 @@ public class ArtistService {
     }
 
     @Transactional
-    public ArtistDTO update(Long id, ArtistDTO dto) {
+    public ArtistDTO update(Long id, CreateArtistRequest request, MultipartFile image) {
         Artist artist = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Artista não encontrado"));
         
-        artist.setName(dto.name());
-        if (dto.year() != null) {
-            artist.setYear(dto.year());
+        artist.setName(request.name());
+        artist.setYear(request.year());
+        
+        if (image != null && !image.isEmpty()) {
+            String imageKey = fileStorageService.uploadFile(image);
+            artist.setImageUrl(imageKey);
         }
-        if (dto.imageUrl() != null) {
-            artist.setImageUrl(dto.imageUrl());
+        
+        if (request.albumIds() != null) {
+            if (artist.getAlbums() != null) {
+                for (Album oldAlbum : new ArrayList<>(artist.getAlbums())) {
+                    oldAlbum.getArtists().remove(artist);
+                }
+                artist.getAlbums().clear();
+            }
+            
+            if (!request.albumIds().isEmpty()) {
+                List<Album> albums = albumRepository.findAllById(request.albumIds());
+                artist.setAlbums(albums);
+                
+                for (Album album : albums) {
+                    if (!album.getArtists().contains(artist)) {
+                        album.getArtists().add(artist);
+                    }
+                }
+            }
         }
-        return toDTO(artist);
+        
+        Artist updated = repository.save(artist);
+        
+        // Notifica atualização via WebSocket
+        ArtistUpdateNotificationDTO notification = new ArtistUpdateNotificationDTO(
+            updated.getId(),
+            updated.getName(),
+            updated.getYear(),
+            "UPDATED",
+            LocalDateTime.now()
+        );
+        webSocketService.notifyArtistUpdate(notification);
+        
+        return toDTO(updated);
     }
 
     @Transactional
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Artista não encontrado");
-        }
+        Artist artist = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Artista não encontrado"));
+        
+        // Notifica exclusão via WebSocket
+        ArtistUpdateNotificationDTO notification = new ArtistUpdateNotificationDTO(
+            artist.getId(),
+            artist.getName(),
+            artist.getYear(),
+            "DELETED",
+            LocalDateTime.now()
+        );
+        
         repository.deleteById(id);
+        webSocketService.notifyArtistUpdate(notification);
     }
 
     private ArtistDTO toDTO(Artist artist) {

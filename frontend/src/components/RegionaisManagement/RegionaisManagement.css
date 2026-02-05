@@ -9,6 +9,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .regionais-header h2 {
@@ -16,26 +18,177 @@
   font-size: 24px;
   font-weight: 600;
   color: #333;
+  flex: 1;
+  min-width: 200px;
 }
 
-.btn-refresh {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 300px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 2px solid #000;
+  background: white;
+  color: #000;
   cursor: pointer;
   font-weight: 500;
-  transition: background 0.2s;
+  font-size: 14px;
+  border-radius: 0;
+  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  outline: none;
+  transition: all 0.2s;
 }
 
-.btn-refresh:hover:not(:disabled) {
-  background: #0056b3;
+.filter-select:hover {
+  background: #f0f0f0;
 }
 
+.filter-select:focus {
+  box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-sync,
+.btn-add,
+.btn-refresh {
+  padding: 10px 16px;
+  border: 2px solid #000;
+  background: white;
+  color: #000;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  border-radius: 0;
+}
+
+.btn-sync:hover:not(:disabled),
+.btn-add:hover:not(:disabled) {
+  background: #000;
+  color: white;
+}
+
+.btn-sync:disabled,
+.btn-add:disabled,
 .btn-refresh:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-sync:active,
+.btn-add:active,
+.btn-refresh:active {
+  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+  transform: translate(2px, 2px);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border: 2px solid #000;
+  padding: 32px;
+  border-radius: 0;
+  box-shadow: 12px 12px 0px 0px rgba(0,0,0,1);
+  max-width: 500px;
+  width: 90%;
+}
+
+.modal-content h3 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-input {
+  padding: 12px 16px;
+  border: 2px solid #000;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 0;
+  font-family: 'Courier New', monospace;
+}
+
+.modal-input:focus {
+  outline: none;
+  background: #f0f0f0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-cancel,
+.btn-submit {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #000;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  border-radius: 0;
+}
+
+.btn-cancel {
+  background: white;
+  color: #000;
+}
+
+.btn-cancel:hover {
+  background: #f5f5f5;
+}
+
+.btn-submit {
+  background: #000;
+  color: white;
+}
+
+.btn-submit:hover {
+  background: #333;
+}
+
+.btn-cancel:active,
+.btn-submit:active {
+  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+  transform: translate(2px, 2px);
 }
 
 .regionais-grid {
@@ -103,6 +256,51 @@
 
 .regional-info p {
   margin: 4px 0;
+}
+
+.regional-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-toggle {
+  padding: 8px 16px;
+  border: 2px solid #000;
+  background: white;
+  color: #000;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  box-shadow: 3px 3px 0px 0px rgba(0,0,0,1);
+  border-radius: 0;
+  flex: 1;
+}
+
+.btn-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+}
+
+.btn-toggle:active {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+}
+
+.btn-inativar:hover {
+  background: #ff4444;
+  color: white;
+  border-color: #cc0000;
+}
+
+.btn-ativar:hover {
+  background: #00aa00;
+  color: white;
+  border-color: #008800;
 }
 
 .empty-state {

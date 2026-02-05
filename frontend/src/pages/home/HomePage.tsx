@@ -12,8 +12,9 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    if (!isAuthenticated) return;
     loadStats();
-  }, []);
+  }, [isAuthenticated]);
 
   const loadStats = async () => {
     try {

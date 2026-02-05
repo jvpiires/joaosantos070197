@@ -22,7 +22,7 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "x-requested-with"));
 

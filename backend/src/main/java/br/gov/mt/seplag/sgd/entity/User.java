@@ -49,6 +49,11 @@ public class User implements UserDetails {
     public boolean isAccountNonLocked() { return true; }
 
     @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override

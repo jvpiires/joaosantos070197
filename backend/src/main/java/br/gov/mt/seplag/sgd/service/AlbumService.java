@@ -3,6 +3,7 @@ package br.gov.mt.seplag.sgd.service;
 import br.gov.mt.seplag.sgd.dto.AlbumDTO;
 import br.gov.mt.seplag.sgd.dto.AlbumImageDTO;
 import br.gov.mt.seplag.sgd.dto.AlbumNotificationDTO;
+import br.gov.mt.seplag.sgd.dto.AlbumUpdateNotificationDTO;
 import br.gov.mt.seplag.sgd.dto.ArtistDTO;
 import br.gov.mt.seplag.sgd.entity.Album;
 import br.gov.mt.seplag.sgd.entity.AlbumImage;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -135,11 +137,79 @@ public class AlbumService {
     }
 
     @Transactional
+    public AlbumDTO update(Long id, AlbumDTO dto, MultipartFile imageFile, Long[] artistIds) {
+        Album album = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Álbum não encontrado"));
+
+        album.setTitle(dto.title());
+
+        if (artistIds != null && artistIds.length > 0) {
+            if (album.getArtists() != null) {
+                album.getArtists().clear();
+            }
+            
+            List<Artist> artists = artistRepository.findAllById(Arrays.asList(artistIds));
+            album.setArtists(artists);
+        } else if (dto.artistIds() != null) {
+            if (album.getArtists() != null) {
+                album.getArtists().clear();
+            }
+            
+            if (!dto.artistIds().isEmpty()) {
+                List<Artist> artists = artistRepository.findAllById(dto.artistIds());
+                album.setArtists(artists);
+            }
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String fileKey = fileStorageService.uploadFile(imageFile);
+            AlbumImage image = new AlbumImage();
+            image.setAlbum(album);
+            image.setFileKey(fileKey);
+            image.setFileName(imageFile.getOriginalFilename());
+            image.setContentType(imageFile.getContentType());
+            albumImageRepository.save(image);
+            
+            if (!album.getImages().contains(image)) {
+                album.getImages().add(image);
+            }
+        }
+
+        Album updated = repository.save(album);
+        
+        // Notifica atualização via WebSocket
+        AlbumUpdateNotificationDTO notification = new AlbumUpdateNotificationDTO(
+            updated.getId(),
+            updated.getTitle(),
+            "UPDATED",
+            LocalDateTime.now()
+        );
+        webSocketService.notifyAlbumUpdate(notification);
+        
+        return toDTO(updated);
+    }
+
+    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new EntityNotFoundException("Álbum não encontrado");
         }
+        
+        // Busca o álbum para obter dados para notificação
+        Album album = repository.findById(id).orElse(null);
+        
         repository.deleteById(id);
+        
+        // Notifica exclusão via WebSocket
+        if (album != null) {
+            AlbumUpdateNotificationDTO notification = new AlbumUpdateNotificationDTO(
+                album.getId(),
+                album.getTitle(),
+                "DELETED",
+                LocalDateTime.now()
+            );
+            webSocketService.notifyAlbumUpdate(notification);
+        }
     }
 
     @Transactional

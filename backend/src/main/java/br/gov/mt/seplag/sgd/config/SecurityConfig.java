@@ -63,13 +63,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/albums", "/api/v1/albums/**").permitAll()
 
                         // 6. REGIONAIS - Apenas leitura pública
-                        .requestMatchers(HttpMethod.GET, "/api/regionais", "/api/regionais/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/regionais", "/api/v1/regionais/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/regionais/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/regionais/**").hasRole("ADMIN")
 
                         // 7. Tudo mais exige autenticação
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+                // IMPORTANTE: SecurityFilter ANTES do RateLimitFilter para autenticar primeiro
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(rateLimitFilter, SecurityFilter.class) // RateLimitFilter DEPOIS da autenticação
                 .build();
     }
 

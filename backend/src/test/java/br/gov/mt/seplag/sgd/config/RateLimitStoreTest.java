@@ -13,12 +13,14 @@ class RateLimitStoreTest {
     @InjectMocks
     private RateLimitStore rateLimitStore;
 
+    int rateLimite = 30;
+
     @Test
     void testAllowRequest_WithinLimit() {
         String userId = "user1";
         
-        for (int i = 0; i < 10; i++) {
-            assertTrue(rateLimitStore.allowRequest(userId));
+        for (int i = 0; i < rateLimite; i++) {
+            assertTrue(rateLimitStore.allowRequest(userId, true));
         }
     }
 
@@ -26,11 +28,11 @@ class RateLimitStoreTest {
     void testAllowRequest_ExceedsLimit() {
         String userId = "user2";
         
-        for (int i = 0; i < 10; i++) {
-            assertTrue(rateLimitStore.allowRequest(userId));
+        for (int i = 0; i < rateLimite; i++) {
+            assertTrue(rateLimitStore.allowRequest(userId, true));
         }
         
-        assertFalse(rateLimitStore.allowRequest(userId));
+        assertFalse(rateLimitStore.allowRequest(userId, true));
     }
 
     @Test
@@ -38,10 +40,10 @@ class RateLimitStoreTest {
         String user1 = "user1";
         String user2 = "user2";
         
-        for (int i = 0; i < 10; i++) {
-            assertTrue(rateLimitStore.allowRequest(user1));
+        for (int i = 0; i < rateLimite; i++) {
+            assertTrue(rateLimitStore.allowRequest(user1, true));
         }
         
-        assertTrue(rateLimitStore.allowRequest(user2));
+        assertTrue(rateLimitStore.allowRequest(user2, true));
     }
 }

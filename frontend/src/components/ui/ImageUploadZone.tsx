@@ -1,14 +1,21 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-interface ImageUploadZoneProps {
+export interface ImageUploadZoneProps {
   onImageSelect: (file: File | null) => void;
   error?: string;
+  currentImageUrl?: string;
 }
 
-export const ImageUploadZone = ({ onImageSelect, error }: ImageUploadZoneProps) => {
+export const ImageUploadZone = ({ onImageSelect, error, currentImageUrl }: ImageUploadZoneProps) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (currentImageUrl && !preview) {
+      setPreview(currentImageUrl);
+    }
+  }, [currentImageUrl]);
 
   const handleFileChange = (file: File | null) => {
     if (!file) {

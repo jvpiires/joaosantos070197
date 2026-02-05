@@ -5,6 +5,9 @@ import br.gov.mt.seplag.sgd.dto.CreateArtistRequest;
 import br.gov.mt.seplag.sgd.service.ArtistService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -50,7 +53,16 @@ public class ArtistController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Criar artista", description = "Cadastra um novo artista com imagem, ano e álbuns")
+    @Operation(
+        summary = "Criar artista", 
+        description = "Cadastra um novo artista com imagem, ano e álbuns",
+        requestBody = @RequestBody(
+            required = true,
+            content = @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE
+            )
+        )
+    )
     public ResponseEntity<ArtistDTO> create(
             @RequestPart("data") String dataJson,
             @RequestPart(value = "image", required = false) MultipartFile image
@@ -67,10 +79,23 @@ public class ArtistController {
         }
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Atualizar artista", description = "Atualiza os dados de um artista existente")
-    public ResponseEntity<ArtistDTO> update(@PathVariable Long id, @RequestBody @Valid ArtistDTO dto) {
-        return ResponseEntity.ok(service.update(id, dto));
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "Atualizar artista",
+        description = "Atualiza os dados de um artista existente com suporte a imagem"
+    )
+    public ResponseEntity<ArtistDTO> update(
+            @PathVariable Long id,
+            @RequestPart("data") String dataJson,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        try {
+            CreateArtistRequest request = objectMapper.readValue(dataJson, CreateArtistRequest.class);
+            ArtistDTO updated = service.update(id, request, image);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao processar requisição: " + e.getMessage(), e);
+        }
     }
 
     @DeleteMapping("/{id}")

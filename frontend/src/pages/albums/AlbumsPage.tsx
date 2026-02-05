@@ -30,6 +30,7 @@ export const AlbumsPage = () => {
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
 
   const navigate = useNavigate();
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
 
   useEffect(() => {
     if (!isAdmin && !isUser) {
@@ -37,7 +38,6 @@ export const AlbumsPage = () => {
     }
   }, [isAdmin, isUser, navigate]);
 
-  // Carregar favoritos do usuário
   useEffect(() => {
     if (userId) {
       loadFavorites();
@@ -85,18 +85,18 @@ export const AlbumsPage = () => {
     }
   };
 
+  const handleEdit = (album: Album) => {
+    setSelectedAlbum(album);
+    setShowCreateModal(true);
+  };
+
   if (!isAdmin && !isUser) {
     return null;
   }
 
   useEffect(() => {
-    setFirst(0);
     loadAlbums(0, rows);
-  }, [artistId, searchTerm]);
-
-  useEffect(() => {
-    loadAlbums(first, rows);
-  }, [first, rows]);
+  }, [artistId]);
 
   async function loadAlbums(firstParam = first, rowsParam = rows) {
     try {
@@ -120,6 +120,26 @@ export const AlbumsPage = () => {
       setLoading(false);
     }
   }
+
+  const handleSearch = () => {
+    setFirst(0);
+    loadAlbums(0, rows);
+  };
+
+  const handleDelete = async (id: number, title: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o álbum "${title}"?`)) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/api/v1/albums/${id}`);
+      toast.success('Álbum excluído com sucesso');
+      loadAlbums(first, rows);
+    } catch (error) {
+      toast.error('Erro ao excluir álbum');
+      console.error(error);
+    }
+  };
 
   return (
     <Layout>
@@ -151,8 +171,17 @@ export const AlbumsPage = () => {
           <InputText
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Buscar por título..."
             className="flex-1 border-none bg-transparent p-0 text-base focus:outline-none focus:shadow-none placeholder-gray-400"
+          />
+          <Button
+            icon="pi pi-search"
+            onClick={handleSearch}
+            className="border-2 border-black bg-white text-black hover:!bg-cyan-400 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none"
+            label='Buscar'
+            style={{color: 'black'}}
+            severity='contrast'
           />
         </div>
 
@@ -172,17 +201,44 @@ export const AlbumsPage = () => {
                   >
                     <div className="p-4 space-y-3">
                       <div className="relative -mb-12">
-                        <button
-                          onClick={(e) => toggleFavorite(e, album.id)}
-                          className="absolute -top-6 -left-2 bg-white border-2 border-black p-2.5 hover:bg-pink-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
-                        >
-                          <i
-                            className={`pi text-base ${favorites.has(album.id)
-                                ? 'pi-heart-fill text-red-500'
-                                : 'pi-heart text-gray-600'
-                              }`}
-                          ></i>
-                        </button>
+                        <div className="absolute -top-6 -left-2 flex gap-2">
+                          <button
+                            onClick={(e) => toggleFavorite(e, album.id)}
+                            className="bg-white border-2 border-black p-2.5 hover:bg-pink-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                          >
+                            <i
+                              className={`pi text-base ${favorites.has(album.id)
+                                  ? 'pi-heart-fill text-red-500'
+                                  : 'pi-heart text-gray-600'
+                                }`}
+                            ></i>
+                          </button>
+                          
+                          {isAdmin && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEdit(album);
+                                }}
+                                className="bg-white border-2 border-black p-2.5 hover:bg-blue-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                              >
+                                <i className="pi pi-pencil text-base text-gray-600"></i>
+                              </button>
+                              
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(album.id, album.title);
+                                }}
+                                className="bg-white border-2 border-black p-2.5 hover:bg-red-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                              >
+                                <i className="pi pi-trash text-base text-gray-600"></i>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        
                         <div className="w-full aspect-square border-2 border-black overflow-hidden bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
                           {album.images && album.images.length > 0 ? (
                             <img
@@ -256,7 +312,11 @@ export const AlbumsPage = () => {
 
         <CreateAlbumModal
           visible={showCreateModal}
-          onHide={() => setShowCreateModal(false)}
+          album={selectedAlbum}
+          onHide={() => {
+            setShowCreateModal(false);
+            setSelectedAlbum(null);
+          }}
           onSuccess={() => loadAlbums(0, rows)}
         />
       </div>

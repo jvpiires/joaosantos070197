@@ -3,6 +3,9 @@ package br.gov.mt.seplag.sgd.controller;
 import br.gov.mt.seplag.sgd.dto.AlbumDTO;
 import br.gov.mt.seplag.sgd.service.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -11,11 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import java.net.URI;
 
@@ -46,7 +49,10 @@ public class AlbumController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Criar álbum", description = "Cadastra um novo álbum com artistas e imagem")
+    @Operation(
+        summary = "Criar álbum",
+        description = "Cadastra um novo álbum com artistas e imagem"
+    )
     public ResponseEntity<AlbumDTO> create(
             @RequestParam String title,
             @RequestParam(required = false) MultipartFile image,
@@ -67,10 +73,27 @@ public class AlbumController {
         return ResponseEntity.created(uri).body(created);
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Atualizar álbum", description = "Atualiza os dados de um álbum")
-    public ResponseEntity<AlbumDTO> update(@PathVariable Long id, @RequestBody @Valid AlbumDTO dto) {
-        return ResponseEntity.ok(service.update(id, dto));
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "Atualizar álbum",
+        description = "Atualiza os dados de um álbum com suporte a imagem"
+    )
+    public ResponseEntity<AlbumDTO> update(
+            @PathVariable Long id,
+            @RequestParam String title,
+            @RequestParam(required = false) MultipartFile image,
+            @RequestParam(required = false) Long[] artistIds
+    ) {
+        AlbumDTO dto = new AlbumDTO(
+            id,
+            title,
+            null,
+            artistIds != null ? java.util.Arrays.asList(artistIds) : null,
+            null,
+            null
+        );
+        
+        return ResponseEntity.ok(service.update(id, dto, image, artistIds));
     }
 
     @PostMapping(value = "/{id}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

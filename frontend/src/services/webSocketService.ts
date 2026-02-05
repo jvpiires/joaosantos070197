@@ -1,9 +1,6 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Client, type IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { type AlbumNotification } from '../types/api.types';
-
-export type Notification = AlbumNotification | ArtistNotification;
 
 export interface ArtistNotification {
   id: number;
@@ -11,6 +8,29 @@ export interface ArtistNotification {
   year?: number;
   createdAt: string;
 }
+
+export interface ArtistUpdateNotification {
+  id: number;
+  name: string;
+  year?: number;
+  action: 'UPDATED' | 'DELETED';
+  timestamp: string;
+}
+
+export interface AlbumNotification {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface AlbumUpdateNotification {
+  id: number;
+  title: string;
+  action: 'UPDATED' | 'DELETED';
+  timestamp: string;
+}
+
+export type Notification = ArtistNotification | ArtistUpdateNotification | AlbumNotification | AlbumUpdateNotification;
 
 class WebSocketService {
   private client: Client | null = null;
@@ -26,7 +46,6 @@ class WebSocketService {
     }
 
     const token = localStorage.getItem('token');
-
     const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
 
     this.client = new Client({
@@ -34,7 +53,8 @@ class WebSocketService {
       reconnectDelay: 5000,
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
-        this.connectionSubject.next(true);        
+        this.connectionSubject.next(true);
+
         this.client?.subscribe('/topic/artists', (message: IMessage) => {
           try {
             const notification = JSON.parse(message.body) as ArtistNotification;
@@ -43,13 +63,34 @@ class WebSocketService {
             console.error('Erro ao parsear notificação de artista:', error);
           }
         });
+
+        // Atualizações/exclusões de artistas
+        this.client?.subscribe('/topic/artists/updates', (message: IMessage) => {
+          try {
+            const notification = JSON.parse(message.body) as ArtistUpdateNotification;
+            this.notificationSubject.next(notification);
+          } catch (error) {
+            console.error('Erro ao parsear atualização de artista:', error);
+          }
+        });
         
+        // Novos álbuns
         this.client?.subscribe('/topic/albums', (message: IMessage) => {
           try {
             const notification = JSON.parse(message.body) as AlbumNotification;
             this.notificationSubject.next(notification);
           } catch (error) {
             console.error('Erro ao parsear notificação de álbum:', error);
+          }
+        });
+
+        // Atualizações/exclusões de álbuns
+        this.client?.subscribe('/topic/albums/updates', (message: IMessage) => {
+          try {
+            const notification = JSON.parse(message.body) as AlbumUpdateNotification;
+            this.notificationSubject.next(notification);
+          } catch (error) {
+            console.error('Erro ao parsear atualização de álbum:', error);
           }
         });
         
