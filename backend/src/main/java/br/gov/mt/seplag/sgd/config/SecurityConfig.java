@@ -46,6 +46,7 @@ public class SecurityConfig {
                         // 2. WebSocket e Documentação
                         .requestMatchers("/ws/**", "/ws/sgd/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
 
                         // 3. Gestão de Usuários (Apenas ADMIN) - DEVE VIR ANTES DAS REGRAS GENÉRICAS
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
