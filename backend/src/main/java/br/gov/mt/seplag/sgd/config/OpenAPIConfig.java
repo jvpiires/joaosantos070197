@@ -16,7 +16,10 @@ public class OpenAPIConfig {
                 .info(new Info()
                         .title("Discografia API - SGD")
                         .version("v1")
-                        .description("API REST para gestão de discografias"))
+                        .description("### API REST para gestão de discografias\n\n" +
+                                "**Credenciais para Teste:**\n" +
+                                "* **Admin:** `admin` / `123456` (Acesso Total)\n" +
+                                "* **User:** `user` / `123456` (Acesso Limitado)"))
                 .components(new Components()
                         .addSecuritySchemes("bearer-key",
                                 new SecurityScheme()
