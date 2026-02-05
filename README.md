@@ -62,6 +62,14 @@ O script realiza automaticamente:
 
 ---
 
+### 🐳 Opção Manual — Subir com Docker Compose
+
+```
+docker-compose down --volumes --rmi all
+docker volume prune -f
+docker-compose up --build -d
+```
+
 ### 🛠 Execução Manual (Desenvolvimento)
 
 #### Backend
