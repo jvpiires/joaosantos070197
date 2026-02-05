@@ -1,30 +1,36 @@
-const { createToken, validateToken, isTokenExpired } = require('../tokenUtils');
+import { describe, expect, it } from 'vitest';
+import { tokenUtils } from '../utils/tokenUtils';
 
-test('createToken should return a valid token', () => {
-	const token = createToken({ userId: 1 });
-	expect(token).toBeDefined();
-	expect(typeof token).toBe('string');
-});
+const base64Url = (value: string) =>
+	btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-test('validateToken should return true for a valid token', () => {
-	const token = createToken({ userId: 1 });
-	const isValid = validateToken(token);
-	expect(isValid).toBe(true);
-});
+const createJwt = (payload: object) => {
+	const header = base64Url(JSON.stringify({ alg: 'none', typ: 'JWT' }));
+	const body = base64Url(JSON.stringify(payload));
+	return `${header}.${body}.`;
+};
 
-test('validateToken should return false for an invalid token', () => {
-	const isValid = validateToken('invalid.token.string');
-	expect(isValid).toBe(false);
-});
+describe('tokenUtils', () => {
+	it('saveToken/getToken/removeToken work with localStorage', () => {
+		tokenUtils.saveToken('test-token');
+		expect(tokenUtils.getToken()).toBe('test-token');
 
-test('isTokenExpired should return false for a non-expired token', () => {
-	const token = createToken({ userId: 1 }, { expiresIn: '1h' });
-	const expired = isTokenExpired(token);
-	expect(expired).toBe(false);
-});
+		tokenUtils.removeToken();
+		expect(tokenUtils.getToken()).toBeNull();
+	});
 
-test('isTokenExpired should return true for an expired token', () => {
-	const token = createToken({ userId: 1 }, { expiresIn: '-1s' });
-	const expired = isTokenExpired(token);
-	expect(expired).toBe(true);
+	it('decodeToken returns payload data', () => {
+		const token = createJwt({ sub: 'user', exp: 9999999999, iat: 1, role: 'USER' });
+		const decoded = tokenUtils.decodeToken(token);
+
+		expect(decoded?.sub).toBe('user');
+		expect(decoded?.role).toBe('USER');
+	});
+
+	it('isTokenExpired is false when exp is in the future', () => {
+		const exp = Math.floor(Date.now() / 1000) + 60;
+		const token = createJwt({ sub: 'user', exp, iat: exp - 60, role: 'USER' });
+
+		expect(tokenUtils.isTokenExpired(token)).toBe(false);
+	});
 });

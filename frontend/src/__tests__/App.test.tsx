@@ -1,35 +1,50 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
-test('renders main application component', () => {
-    render(<App />);
-    const linkElement = screen.getByText(/welcome to the app/i);
-    expect(linkElement).toBeInTheDocument();
-});
+vi.mock('../pages/home/HomePage', () => ({
+    HomePage: () => <div>Home Page</div>,
+}));
 
-test('has a header', () => {
-    render(<App />);
-    const headerElement = screen.getByRole('heading', { name: /app header/i });
-    expect(headerElement).toBeInTheDocument();
-});
+vi.mock('../pages/admin/UsersPage', () => ({
+    UsersPage: () => <div>Users Page</div>,
+}));
 
-test('renders navigation links', () => {
-    render(<App />);
-    const navElement = screen.getByRole('navigation');
-    expect(navElement).toBeInTheDocument();
-});
+vi.mock('../pages/admin/RegionaisPage', () => ({
+    RegionaisPage: () => <div>Regionais Page</div>,
+}));
 
-test('renders footer', () => {
-    render(<App />);
-    const footerElement = screen.getByText(/footer content/i);
-    expect(footerElement).toBeInTheDocument();
-});
+vi.mock('../pages/artists/ArtistsPage', () => ({
+    ArtistsPage: () => <div>Artists Page</div>,
+}));
 
-test('handles button click', () => {
-    render(<App />);
-    const buttonElement = screen.getByRole('button', { name: /click me/i });
-    buttonElement.click();
-    const resultElement = screen.getByText(/button clicked/i);
-    expect(resultElement).toBeInTheDocument();
+vi.mock('../pages/albums/AlbumsPage', () => ({
+    AlbumsPage: () => <div>Albums Page</div>,
+}));
+
+vi.mock('../pages/favorites/FavoritesPage', () => ({
+    FavoritesPage: () => <div>Favorites Page</div>,
+}));
+
+describe('App routes', () => {
+    it('renders artists page for /artists', () => {
+        render(
+            <MemoryRouter initialEntries={['/artists']}>
+                <App />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByText('Artists Page')).toBeInTheDocument();
+    });
+
+    it('redirects unknown routes to home', () => {
+        render(
+            <MemoryRouter initialEntries={['/unknown']}>
+                <App />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByText('Home Page')).toBeInTheDocument();
+    });
 });

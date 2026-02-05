@@ -1,28 +1,69 @@
-const authService = require('../authService');
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { authService } from '../services/authService';
 
-test('login function should return user data on successful login', async () => {
-	const userData = await authService.login('testUser', 'testPassword');
-	expect(userData).toHaveProperty('id');
-	expect(userData).toHaveProperty('username', 'testUser');
+const mocks = vi.hoisted(() => {
+	const authClientPost = vi.fn();
+	const axiosPost = vi.fn();
+	const axiosCreate = vi.fn(() => ({ post: authClientPost }));
+
+	return { authClientPost, axiosPost, axiosCreate };
 });
 
-test('login function should throw error on failed login', async () => {
-	await expect(authService.login('wrongUser', 'wrongPassword')).rejects.toThrow('Invalid credentials');
-});
+vi.mock('axios', () => ({
+	default: {
+		post: mocks.axiosPost,
+		create: mocks.axiosCreate,
+	},
+}));
 
-test('logout function should clear user session', () => {
-	authService.logout();
-	expect(authService.getCurrentUser()).toBeNull();
-});
+describe('authService', () => {
+	beforeEach(() => {
+		mocks.axiosPost.mockReset();
+		mocks.authClientPost.mockReset();
+		mocks.axiosCreate.mockClear();
+	});
 
-test('session management should return current user', () => {
-	authService.login('testUser', 'testPassword');
-	const currentUser = authService.getCurrentUser();
-	expect(currentUser).toHaveProperty('username', 'testUser');
-});
+	it('login posts to /auth/login and returns data', async () => {
+		const response = { token: 'token', userRole: 'USER' };
+			mocks.axiosPost.mockResolvedValue({ data: response });
 
-test('session management should return null if no user is logged in', () => {
-	authService.logout();
-	const currentUser = authService.getCurrentUser();
-	expect(currentUser).toBeNull();
+		const result = await authService.login({ login: 'user', password: 'pass' });
+
+			expect(mocks.axiosPost).toHaveBeenCalledWith('http://localhost:3333/auth/login', {
+			login: 'user',
+			password: 'pass',
+		});
+		expect(result).toEqual(response);
+	});
+
+	it('register posts to /auth/register', async () => {
+			mocks.axiosPost.mockResolvedValue({ data: {} });
+
+		await authService.register({ login: 'user', password: 'pass', userRole: 'USER' });
+
+			expect(mocks.axiosPost).toHaveBeenCalledWith('http://localhost:3333/auth/register', {
+			login: 'user',
+			password: 'pass',
+			userRole: 'USER',
+		});
+	});
+
+	it('refreshToken uses authClient with Authorization header', async () => {
+		const response = { token: 'new-token', userRole: 'ADMIN' };
+			mocks.authClientPost.mockResolvedValue({ data: response });
+
+		const result = await authService.refreshToken('old-token');
+
+			expect(mocks.authClientPost).toHaveBeenCalledWith(
+			'/auth/refresh',
+			{},
+			{
+				headers: {
+					Authorization: 'Bearer old-token',
+					'Content-Type': 'application/json',
+				},
+			}
+		);
+		expect(result).toEqual(response);
+	});
 });
