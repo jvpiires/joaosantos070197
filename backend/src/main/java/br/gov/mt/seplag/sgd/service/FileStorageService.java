@@ -1,9 +1,7 @@
 package br.gov.mt.seplag.sgd.service;
 
-import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class FileStorageService {
@@ -21,6 +18,9 @@ public class FileStorageService {
 
     @Value("${sgd.storage.bucket-name}")
     private String bucketName;
+    
+    @Value("${sgd.storage.public-url}")
+    private String publicUrl;
 
     public String uploadFile(MultipartFile file) {
         try {
@@ -45,14 +45,8 @@ public class FileStorageService {
 
     public String getPresignedUrl(String fileKey) {
         try {
-            return minioClient.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs.builder()
-                    .method(Method.GET)
-                    .bucket(bucketName)
-                    .object(fileKey)
-                    .expiry(1, TimeUnit.HOURS)
-                    .build()
-            );
+            // Como o bucket está configurado como público, retorna URL direta
+            return publicUrl + "/" + bucketName + "/" + fileKey;
         } catch (Exception e) {
             e.printStackTrace(); 
             return null;

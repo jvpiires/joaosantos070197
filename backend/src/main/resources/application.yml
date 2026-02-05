@@ -4,7 +4,7 @@ spring:
   
   # Conexão com o Banco (PostgreSQL)
   datasource:
-    url: jdbc:postgresql://localhost:5432/db_discografia_core?currentSchema=public
+    url: jdbc:postgresql://database:5432/db_discografia_core?currentSchema=public
     username: srv_discografia
     password: P@ssw0rd_Seplag2026!
     driver-class-name: org.postgresql.Driver
@@ -36,7 +36,8 @@ spring:
 # Configuração Personalizada do MinIO (S3)
 sgd:
   storage:
-    url: http://localhost:9000
+    url: http://storage:9000
+    public-url: http://localhost:9000
     access-key: admin_storage
     secret-key: Storage_Key_2026!
     bucket-name: capas-albuns-media
