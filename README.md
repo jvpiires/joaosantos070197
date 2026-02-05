@@ -62,11 +62,18 @@ O script realiza automaticamente:
 
 ---
 
-### 🐳 Opção Manual — Subir com Docker Compose
+### 🐳 Opção Manual — Execução via Docker Compose
 
-```
+#### 1️⃣ Limpar containers, volumes e imagens antigas (opcional):
+
+```bash
 docker-compose down --volumes --rmi all
 docker volume prune -f
+```
+
+#### 2️⃣ Subir os serviços:
+
+```bash
 docker-compose up --build -d
 ```
 
