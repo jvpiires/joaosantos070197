@@ -8,9 +8,9 @@ export const Sidebar = () => {
 
   return (
     <aside className="w-64 h-full min-h-screen p-6 flex flex-col font-jetbrains">
-      
+
       <div className="flex-1 space-y-8 justify-between">
-        
+
         <div className="space-y-1 justify-start">
           <p className="px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3 ">Menu</p>
           <MenuItem icon="pi pi-home" label="Home" to="/home" />
@@ -50,6 +50,10 @@ export const Sidebar = () => {
                 {userRole}
               </span>
             </div>
+
+          </div>
+          <div className='flex justify-center mt-4 text-[10px] text-gray-400'>
+            version 1.0.0 - PRD
           </div>
         </div>
       )}

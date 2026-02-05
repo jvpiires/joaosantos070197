@@ -126,6 +126,12 @@ Authorization: Bearer <access_token>
 
 ---
 
+## 📡 Notificações em Tempo Real (WebSocket) e Rate Limit
+
+🔔 WebSocket: notificar no front quando um novo álbum for cadastrado
+
+🛡️ Rate limit: máximo **10 req/min por usuário**
+
 ## 🎼 Funcionalidades
 
 ### 🎤 Artistas
@@ -178,26 +184,6 @@ GET /api/users
 PUT /api/users/{id}/role
 POST /api/v1/regionais/sync
 ```
-
----
-
-## 🗂 Estrutura do Projeto
-
-```
-backend/
-  ├─ controller
-  ├─ service
-  ├─ repository
-  ├─ security
-  └─ config
-
-frontend/
-  ├─ pages
-  ├─ components
-  ├─ services
-  └─ hooks
-```
-
 ---
 
 ## 🧪 Testes

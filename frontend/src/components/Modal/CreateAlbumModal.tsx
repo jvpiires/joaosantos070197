@@ -195,10 +195,12 @@ export const CreateAlbumModal = ({ visible, album, onHide, onSuccess }: CreateAl
               label="Cancelar" 
               disabled={loading}
               onClick={handleClose}
+              severity='contrast'
               className="flex-1 border-2 border-black text-black py-3 font-black uppercase tracking-[0.1em] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
             />
             <Button 
               type="submit"
+              severity='contrast'
               label={loading ? (isEditMode ? "Salvando..." : "Criando...") : (isEditMode ? "Salvar" : "Criar")}
               disabled={loading}
               className="flex-1 border-none bg-black text-white py-3 font-black uppercase tracking-[0.2em] hover:!bg-cyan-400 hover:!text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"

@@ -13,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RateLimitStore {
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
     
-    private static final int AUTHENTICATED_LIMIT = 30;
+    private static final int AUTHENTICATED_LIMIT = 10;
     
-    private static final int IP_LIMIT = 30;
+    private static final int IP_LIMIT = 10;
 
     public Bucket resolveBucket(String key, boolean isAuthenticated) {
         return cache.computeIfAbsent(key, k -> createNewBucket(isAuthenticated));

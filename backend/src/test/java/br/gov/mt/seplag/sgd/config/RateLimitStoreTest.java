@@ -13,7 +13,7 @@ class RateLimitStoreTest {
     @InjectMocks
     private RateLimitStore rateLimitStore;
 
-    int rateLimite = 30;
+    int rateLimite = 10;
 
     @Test
     void testAllowRequest_WithinLimit() {

@@ -6,6 +6,12 @@ import br.gov.mt.seplag.sgd.dto.RegisterDTO;
 import br.gov.mt.seplag.sgd.entity.User;
 import br.gov.mt.seplag.sgd.repository.UserRepository;
 import br.gov.mt.seplag.sgd.service.TokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +26,7 @@ import br.gov.mt.seplag.sgd.infra.UserAlreadyExistsException;
 @RestController
 @RequestMapping("auth")
 @CrossOrigin(origins = "*")
+@Tag(name = "🔐 Autenticação", description = "Endpoints de autenticação e autorização")
 public class AuthenticationController {
 
     @Autowired
@@ -32,6 +39,19 @@ public class AuthenticationController {
     private TokenService tokenService;
 
     @PostMapping("/login")
+    @Operation(
+            summary = "Fazer Login",
+            description = "Autentica o usuário e retorna um token JWT. Use as credenciais padrão para testar: admin/password123"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Login realizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDTO.class))
+            ),
+            @ApiResponse(responseCode = "401", description = "Usuário ou senha inválida"),
+            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos")
+    })
     public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
@@ -44,6 +64,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
+    @Operation(
+            summary = "Registrar Novo Usuário",
+            description = "Cria uma nova conta de usuário com a role de USER"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário registrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou usuário já existe"),
+            @ApiResponse(responseCode = "409", description = "Usuário já cadastrado")
+    })
     public ResponseEntity register(@RequestBody @Valid RegisterDTO data) {
         if (this.repository.findByLogin(data.login()) != null) {
             throw new UserAlreadyExistsException("Este usuário já está cadastrado.");
@@ -61,6 +90,19 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
+    @Operation(
+            summary = "Renovar Token JWT",
+            description = "Renova um token JWT válido. Envie o token atual no header Authorization: Bearer {token}"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Token renovado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDTO.class))
+            ),
+            @ApiResponse(responseCode = "401", description = "Token inválido ou expirado"),
+            @ApiResponse(responseCode = "500", description = "Erro ao renovar token")
+    })
     public ResponseEntity refreshToken(HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
