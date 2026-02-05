@@ -122,31 +122,47 @@ public class ArtistController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
         summary = "Atualizar artista",
-        description = "Atualiza os dados de um artista existente com suporte a imagem"
+        description = """
+                Atualiza os dados de um artista existente com suporte a imagem.
+                
+                ⚠️ IMPORTANTE - Campo 'data' deve ser um JSON válido:
+                ```json
+                {
+                  "name": "The Beatles",
+                  "year": 1960,
+                  "albumIds": [1, 2, 3]
+                }
+                ```
+                """
     )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Artista atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado"),
+            @ApiResponse(responseCode = "404", description = "Artista não encontrado")
+    })
     public ResponseEntity<ArtistDTO> update(
             @io.swagger.v3.oas.annotations.Parameter(description = "ID do artista", example = "1")
             @PathVariable Long id,
             
-            @io.swagger.v3.oas.annotations.Parameter(description = "Nome do artista", example = "The Beatles")
-            @RequestParam String name,
+            @RequestPart("data")
+            @Schema(
+                    description = "Dados do artista em JSON. Cole um JSON válido, não um número simples!",
+                    example = "{\"name\":\"The Beatles\",\"year\":1960,\"albumIds\":[]}"
+            )
+            String dataJson,
             
-            @io.swagger.v3.oas.annotations.Parameter(description = "Ano de formação", example = "1960")
-            @RequestParam Integer year,
-            
-            @io.swagger.v3.oas.annotations.Parameter(description = "Nova imagem/foto (opcional)")
-            @RequestParam(required = false) MultipartFile image,
-            
-            @io.swagger.v3.oas.annotations.Parameter(description = "IDs dos álbuns (opcional)", example = "1,2")
-            @RequestParam(required = false) Long[] albumIds
+            @RequestPart(value = "image", required = false)
+            @Schema(description = "Nova imagem/foto do artista (PNG, JPG, etc)")
+            MultipartFile image
     ) {
-        CreateArtistRequest request = new CreateArtistRequest(
-            name,
-            year,
-            albumIds != null ? java.util.Arrays.asList(albumIds) : null
-        );
-        ArtistDTO updated = service.update(id, request, image);
-        return ResponseEntity.ok(updated);
+        try {
+            CreateArtistRequest request = objectMapper.readValue(dataJson, CreateArtistRequest.class);
+            ArtistDTO updated = service.update(id, request, image);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao processar requisição: " + e.getMessage(), e);
+        }
     }
 
     @DeleteMapping("/{id}")
