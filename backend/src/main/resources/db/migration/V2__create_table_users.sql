@@ -8,3 +8,6 @@ CREATE TABLE users (
 
 INSERT INTO users (login, password, role)
 VALUES ('admin', '$2a$10$51ze7IbDXska5CQmz9SKFu/Scncz9YitJd7QygmGVcwbqfnBPw6Cm', 'ADMIN');
+
+INSERT INTO users (login, password, role)
+VALUES ('user', '$2a$10$51ze7IbDXska5CQmz9SKFu/Scncz9YitJd7QygmGVcwbqfnBPw6Cm', 'USER');
